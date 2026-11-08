@@ -11,7 +11,6 @@
 <meta property="og:image" content="https://swishkabobs.com/poster.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%81%3C/text%3E%3C/svg%3E">
 <link rel="preload" as="font" href="yellowtail.woff2" type="font/woff2" crossorigin>
-<link rel="preload" as="image" href="poster.webp" type="image/webp">
 <style>
   @font-face {
     font-family: "Yellowtail";
@@ -31,45 +30,39 @@
     background: #b5480e;
   }
 
-  /* Full-screen fill: the same artwork, blurred, so every screen shape is covered */
-  .backdrop {
+  /* The artwork, extended outward, sized to cover any screen.
+     Laptops and wide screens get the wide version, phones the tall one. */
+  .scene {
+    --ar: 2690 / 1454;
+    --px: 28.2528%; --py: 0%; --pw: 43.4944%; --ph: 100%;
     position: fixed;
-    inset: -40px;
-    background: #b5480e url("poster-tiny.jpg") center / cover no-repeat;
-    filter: blur(28px) saturate(1.15) brightness(.85);
-    transform: scale(1.1);
-  }
-  .backdrop::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: url("poster.jpg") center / cover no-repeat;
-  }
-
-  /* The poster itself, as large as the screen allows without cropping */
-  .stage {
-    position: fixed;
-    inset: 0;
-    display: grid;
-    place-items: center;
-  }
-  .poster {
-    position: relative;
-    width: min(100vw, calc(100dvh * 1170 / 1454));
-    aspect-ratio: 1170 / 1454;
-    container-type: inline-size;
-    box-shadow: 0 0 80px 10px rgba(40, 12, 0, .45);
+    left: 50%;
+    top: 50%;
+    width: max(100vw, calc(100dvh * 2690 / 1454));
+    aspect-ratio: var(--ar);
+    translate: -50% -50%;
     animation: rise 1.4s cubic-bezier(.2,.7,.2,1) both;
   }
-  .poster picture, .poster img {
+  @media (max-aspect-ratio: 79/100) {
+    .scene {
+      --ar: 1170 / 2574;
+      --px: 0%; --py: 21.7560%; --pw: 100%; --ph: 56.4880%;
+      width: max(100vw, calc(100dvh * 1170 / 2574));
+    }
+  }
+  .scene picture, .scene img {
     display: block;
     width: 100%;
     height: 100%;
   }
-  /* Soft edges so the poster melts into the blurred fill */
-  .poster img {
-    -webkit-mask-image: radial-gradient(130% 115% at 50% 50%, #000 70%, transparent 100%);
-            mask-image: radial-gradient(130% 115% at 50% 50%, #000 70%, transparent 100%);
+  /* Box that lines up exactly with the original poster inside the artwork */
+  .poster {
+    position: absolute;
+    left: var(--px);
+    top: var(--py);
+    width: var(--pw);
+    height: var(--ph);
+    container-type: inline-size;
   }
 
   /* "Coming Soon" set where the season dates used to be */
@@ -113,18 +106,19 @@
     50%      { transform: rotate(-1.5deg) translateY(-1.2cqw); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .poster, .soon { animation: none; }
+    .scene, .soon { animation: none; }
   }
 </style>
 </head>
 <body>
-  <div class="backdrop" aria-hidden="true"></div>
-  <main class="stage">
+  <main class="scene">
+    <picture>
+      <source media="(max-aspect-ratio: 79/100)" srcset="poster-tall.webp" type="image/webp">
+      <source media="(max-aspect-ratio: 79/100)" srcset="poster-tall.jpg">
+      <source srcset="poster-wide.webp" type="image/webp">
+      <img src="poster-wide.jpg" alt="Swish Kabobs fall poster: Dropping Leaves and Draining Threes, under an autumn maple tree with the CN Tower behind">
+    </picture>
     <div class="poster">
-      <picture>
-        <source srcset="poster.webp" type="image/webp">
-        <img src="poster.jpg" alt="Swish Kabobs fall poster: Dropping Leaves and Draining Threes, under an autumn maple tree with the CN Tower behind" width="1170" height="1454">
-      </picture>
       <h1 class="soon">Coming Soon</h1>
     </div>
   </main>
