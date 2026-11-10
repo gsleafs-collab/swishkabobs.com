@@ -43,7 +43,7 @@ window.SK = {
     { num: 9,  name: 'Andrew Lam', gp: 4, pts: 12, reb: 14, ast: 9,  tpm: 1,  tpa: 12, fgm: 5,  fga: 22 },
     { num: 77, name: 'Malcom Adejobi', gp: 2, pts: 8,  reb: 9,  ast: 0,  tpm: 0,  tpa: 1,  fgm: 4,  fga: 10 },
     { num: 31, name: 'John Ganaden', gp: 3, pts: 8,  reb: 14, ast: 7,  tpm: 0,  tpa: 0,  fgm: 3,  fga: 7 },
-    { num: 32, name: 'Joshua Morales Franco', gp: 4, pts: 6,  reb: 16, ast: 1,  tpm: 0,  tpa: 1,  fgm: 3,  fga: 11 },
+    { num: 32, name: 'Joshua Morales', gp: 4, pts: 6,  reb: 16, ast: 1,  tpm: 0,  tpa: 1,  fgm: 3,  fga: 11 },
     { num: 5,  name: 'Spencer Healy', gp: 3, pts: 3,  reb: 4,  ast: 0,  tpm: 1,  tpa: 9,  fgm: 1,  fga: 10 },
     { num: 7,  name: 'Eric Lee', gp: 3, pts: 2,  reb: 3,  ast: 1,  tpm: 0,  tpa: 3,  fgm: 1,  fga: 4 },
     { num: 19, name: 'Joshua Jeyamohan', gp: 3, pts: 0,  reb: 3,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 },
