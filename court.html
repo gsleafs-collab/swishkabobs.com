@@ -123,20 +123,8 @@
       radial-gradient(ellipse 60% 50% at 85% 100%, rgba(238,97,35,.22), transparent 70%),
       var(--ink);
   }
-  /* Hardwood floor with court lines */
-  .floor {
-    position: absolute; left: -10%; right: -10%; bottom: 0; height: 34%;
-    background:
-      repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 2px, transparent 2px 84px),
-      linear-gradient(180deg, #a86a32, var(--wood) 40%, #dba465);
-    transform-origin: bottom; transform: perspective(700px) rotateX(58deg);
-    box-shadow: 0 -30px 60px rgba(0,0,0,.6) inset;
-  }
-  .floor::before {
-    content: ""; position: absolute; left: 50%; top: -60%; width: 46%; aspect-ratio: 1; translate: -50% 0;
-    border: 6px solid rgba(253,240,200,.75); border-radius: 50%;
-  }
-  .floor::after { content: ""; position: absolute; left: 0; right: 0; top: 30%; border-top: 6px solid rgba(253,240,200,.75); }
+  /* Hardwood court, drawn in perspective by drawCourt() so it lines up with the hoop */
+  .floor { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   #balls { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; cursor: grab; }
   #balls.hold { cursor: grabbing; }
   .hero .wrap { position: relative; width: 100%; padding-top: 28px; padding-bottom: 150px; pointer-events: none; }
@@ -163,6 +151,7 @@
     animation: fadeup .8s 1s both;
   }
   @media (max-width: 760px) { .skewer { height: 112px; top: 16px; left: 16px; right: auto; translate: 0 0; } .hero .wrap { padding-top: 140px; } .title { margin-top: 0 !important; } .eyebrow { max-width: none !important; } }
+  @media (max-width: 760px) { .hint { left: auto; right: 16px; translate: none; top: 26px; bottom: auto !important; } }
   .buckets {
     position: absolute; z-index: 4; right: 14px; top: 14px; pointer-events: none; text-align: center;
     background: #0b0e11; border: 1px solid var(--ink-3); border-radius: 12px; padding: 6px 12px 4px; box-shadow: 0 10px 24px rgba(0,0,0,.5);
@@ -405,7 +394,7 @@
 
 <main id="top">
   <div class="hero">
-    <div class="floor" aria-hidden="true"></div>
+    <svg class="floor" id="court" aria-hidden="true" preserveAspectRatio="none"></svg>
     <canvas id="balls" aria-hidden="true"></canvas>
     <img class="skewer" src="logo-mark.png" alt="Swish Kabobs logo: a basketball on a skewer">
     <div class="wrap">
@@ -695,8 +684,48 @@
     hoop.back = hoop.bx - 6; hoop.front = hoop.back - rimW;
     hoop.top = hoop.rimY - R * 3.4; hoop.bot = hoop.rimY + R * .7;
     const bk = $('buckets'); bk.style.right = (W - hoop.bx + 4) + 'px'; bk.style.top = Math.max(8, hoop.top - 70) + 'px';
+    drawCourt();
     VMAX = Math.sqrt(2 * G * (floorY - hoop.rimY + R * 9));        // top speed clears the rim with room to spare
     balls.forEach((b) => { b.r = R; b.x = Math.min(b.x, W - R); b.y = Math.min(b.y, floorY - R); });
+  }
+  /* Half court seen from the sideline, basket on the right. Court positions are in feet:
+     u = distance from the baseline toward centre court, v = distance across the floor
+     (0 is the line the balls sit on, positive is farther from the camera). */
+  function drawCourt() {
+    const rimX = (hoop.front + hoop.back) / 2, ppf = Math.max(12, Math.min(30, W / 46));
+    const hd = Math.max(200, Math.min(380, H * .42)), hz = floorY - hd, z0 = 40, vp = W * .5;
+    const P = (u, v) => { const k = z0 / (z0 + Math.max(v, -26)); return [(vp + (rimX - (u - 5.25) * ppf - vp) * k).toFixed(1), (hz + hd * k).toFixed(1)]; };
+    const d = (pts, close) => 'M' + pts.map((q) => q.join(' ')).join('L') + (close ? 'Z' : '');
+    const arc = (cu, cv, r, a0, a1, n = 48) => { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push(P(cu + r * Math.cos(a), cv + r * Math.sin(a))); } return o; };
+    const box = (u0, u1, v0, v1) => [P(u0, v0), P(u1, v0), P(u1, v1), P(u0, v1)];
+    const farY = +P(0, 32)[1], t3 = Math.asin(22 / 23.75);
+    let planks = '';
+    for (let v = -24; v < 25; v += 1.25) planks += d([P(0, v), P(94, v)]);
+    const lines = [
+      d(box(0, 94, -25, 25), true),                                 // sidelines and baselines
+      d(box(0, 19, -8, 8), true),                                   // the paint
+      d(arc(19, 0, 6, 0, Math.PI * 2), true),                       // free throw circle
+      d([P(4, -4), ...arc(5.25, 0, 4, -Math.PI / 2, Math.PI / 2), P(4, 4)]),   // restricted area
+      d([P(0, -22), ...arc(5.25, 0, 23.75, -t3, t3), P(0, 22)]),    // three point line
+      d([P(47, -25), P(47, 25)]),                                   // half court
+      d(arc(47, 0, 6, 0, Math.PI * 2), true),                       // centre circle
+      d([P(7, -8), P(7, -9)]) + d([P(11, -8), P(11, -9)]) + d([P(14, -8), P(14, -9)]) + d([P(7, 8), P(7, 9)]) + d([P(11, 8), P(11, 9)]) + d([P(14, 8), P(14, 9)])  // lane hash marks
+    ].join('');
+    $('hint').style.bottom = (H - farY + 12) + 'px';              // sits on the wall just above the floor
+    const svg = $('court');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = `<defs>
+        <linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="${farY}" x2="0" y2="${H}"><stop offset="0" stop-color="#b47a3f"/><stop offset=".45" stop-color="#d49b5c"/><stop offset="1" stop-color="#e6b577"/></linearGradient>
+        <linearGradient id="haze" gradientUnits="userSpaceOnUse" x1="0" y1="${farY}" x2="0" y2="${floorY}"><stop offset="0" stop-color="#14181d" stop-opacity=".7"/><stop offset="1" stop-color="#14181d" stop-opacity="0"/></linearGradient>
+      </defs>
+      <path d="${d(box(-80, 220, -26, 32), true)}" fill="#0a4a4f"/>
+      <path d="${d(box(0, 94, -25, 25), true)}" fill="url(#wood)"/>
+      <path d="${planks}" stroke="rgba(60,30,8,.16)" stroke-width="1" fill="none"/>
+      <path d="${d(box(0, 19, -8, 8), true)}" fill="#01686f" fill-opacity=".92"/>
+      <path d="${d(arc(47, 0, 6, 0, Math.PI * 2), true)}" fill="#ee6123" fill-opacity=".9"/>
+      <path d="${d(arc(47, 0, 2, 0, Math.PI * 2), true)}" fill="#14181d" fill-opacity=".85"/>
+      <path d="${lines}" stroke="#fdf0c8" stroke-width="${W < 760 ? 2 : 3}" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+      <path d="${d(box(-80, 220, -26, 32), true)}" fill="url(#haze)"/>`;
   }
   function drawHoop(front) {
     const h = hoop;
