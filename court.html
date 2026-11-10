@@ -861,17 +861,18 @@
     };
     cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release); cv.addEventListener('lostpointercapture', release);
     addEventListener('resize', size);
-    // Scrolling back up toward the court tosses the balls: the faster the scroll, the higher they lift
+    // Scrolling back up toward the court pops the balls off the floor: the faster the scroll, the higher the hop.
+    // Only balls sitting on the floor get popped, so a long slow scroll can't keep boosting one that's already in the air.
     let sY = scrollY, sT = performance.now();
     addEventListener('scroll', () => {
-      const now = performance.now(), dy = scrollY - sY, dt = Math.min(50, Math.max(8, now - sT)); sY = scrollY; sT = now;   // first move of a new scroll counts as a short step
+      const now = performance.now(), dy = scrollY - sY, dt = Math.min(50, Math.max(16, now - sT)); sY = scrollY; sT = now;
       if (dy >= 0 || !running) return;
-      const lift = Math.min(VMAX * .55, (-dy / dt) * 16.667 * .5);   // strong enough for a mouse wheel, capped for phone flicks   // scroll speed in px per frame, scaled down
-      if (lift < 1.2) return;
+      const speed = (-dy / dt) * 16.667;                           // scroll speed in px per frame
+      const lift = Math.min(VMAX * .5, (speed - 3) * .3);           // a crawl does nothing, a slow scroll is a tiny hop
+      if (lift < 1) return;
       for (const b of balls) {
-        if (b === held) continue;
-        const v = -lift * (.7 + Math.random() * .6);
-        if (b.vy > v) { b.vy = v; b.vx += (Math.random() - .5) * lift * .25; }
+        if (b === held || b.y + b.r < floorY - 1.5) continue;
+        b.vy = -lift * (.75 + Math.random() * .5); b.vx += (Math.random() - .5) * lift * .25;
       }
     }, { passive: true });
   }
