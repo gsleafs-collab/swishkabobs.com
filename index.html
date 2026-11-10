@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Swish Kabobs | Coming Soon</title>
 <meta name="description" content="Swish Kabobs. Dropping leaves and draining threes. Coming soon.">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#c4520f">
 <meta property="og:title" content="Swish Kabobs">
 <meta property="og:description" content="Dropping Leaves & Draining Threes. Coming soon.">
@@ -95,6 +96,56 @@
     pointer-events: none;
   }
 
+  /* Invisible tap target sitting on the spinning basketball */
+  .ball {
+    position: absolute;
+    left: 40.3%;
+    top: 48.8%;
+    width: 17cqw;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    background: none;
+    cursor: default;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .ball i {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    border: .7cqw solid var(--gold);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ball i.go { animation: ring .6s ease-out; }
+  @keyframes ring {
+    from { opacity: .95; transform: scale(.7); }
+    to   { opacity: 0; transform: scale(1.9); }
+  }
+  .scene.hit { animation: thud .28s ease-out; }
+  @keyframes thud {
+    0% { scale: 1; } 40% { scale: 1.012; } 100% { scale: 1; }
+  }
+  /* Third tap: the ball swallows the screen */
+  .wipe {
+    position: fixed;
+    left: var(--wx, 50%);
+    top: var(--wy, 50%);
+    width: 10px;
+    height: 10px;
+    margin: -5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9a4d, #ee6123 55%, #b8410f);
+    transform: scale(0);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .wipe.go { transition: transform .75s cubic-bezier(.7,0,.3,1); transform: scale(var(--ws, 400)); }
+
   @keyframes rise {
     from { opacity: 0; transform: translateY(18px) scale(.985); }
     to   { opacity: 1; transform: none; }
@@ -122,9 +173,43 @@
     </picture>
     <div class="poster">
       <h1 class="soon">Coming Soon...</h1>
+      <button class="ball" id="ball" type="button" tabindex="-1" aria-hidden="true"><i></i></button>
     </div>
   </main>
   <canvas id="leaves" aria-hidden="true"></canvas>
+  <div class="wipe" id="wipe" aria-hidden="true"></div>
+
+<script>
+/* Three quick taps on the basketball opens the team site */
+(() => {
+  const ball = document.getElementById('ball');
+  const ring = ball.firstElementChild;
+  const wipe = document.getElementById('wipe');
+  const scene = document.querySelector('.scene');
+  let taps = 0, timer;
+  ball.addEventListener('click', () => {
+    taps++;
+    clearTimeout(timer);
+    timer = setTimeout(() => { taps = 0; }, 1600);
+    ring.classList.remove('go'); scene.classList.remove('hit');
+    void ring.offsetWidth;
+    ring.classList.add('go'); scene.classList.add('hit');
+    if (taps < 3) return;
+    clearTimeout(timer);
+    try { localStorage.setItem('sk-court', 'swish'); } catch (e) {}
+    const r = ball.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    wipe.style.setProperty('--wx', x + 'px');
+    wipe.style.setProperty('--wy', y + 'px');
+    wipe.style.setProperty('--ws', (far / 5 + 2).toFixed(1));
+    wipe.classList.add('go');
+    setTimeout(() => { location.href = 'court.html'; }, 720);
+  });
+  // Coming back with the browser's back button: reset the wipe
+  addEventListener('pageshow', () => { wipe.classList.remove('go'); taps = 0; });
+})();
+</script>
 
 <script>
 (() => {
