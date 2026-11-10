@@ -394,8 +394,8 @@
       <a href="#schedule">Schedule</a>
       <a href="#stats">Stats</a>
       <a href="#roster">Roster</a>
-      <a href="#film">Film</a>
       <a href="#gram">Gram</a>
+      <a href="#film">Film</a>
     </nav>
   </div>
   <div class="meter" id="meter" aria-hidden="true"><b></b><i></i></div>
@@ -445,25 +445,25 @@
     </div>
   </section>
 
+  <section id="gram">
+    <div class="wrap">
+      <div class="head"><span class="no">04</span><h2>The Gram</h2><p>Latest from the team account.</p></div>
+      <div class="gram rv" id="gramCard"></div>
+      <div class="posts" id="posts"></div>
+    </div>
+  </section>
+
   <section id="film">
     <div class="wrap">
-      <div class="head"><span class="no">04</span><h2>Film Room</h2><p>Every game this season, plus the league highlight reels.</p></div>
-      <h3 class="sub rv">Full games</h3>
-      <div class="film" id="fullGrid"></div>
+      <div class="head"><span class="no">05</span><h2>Film Room</h2><p>Highlight reels first, then the full tape of every game this season.</p></div>
       <h3 class="sub rv">Highlight reels</h3>
       <div class="film" id="hlGrid"></div>
+      <h3 class="sub rv">Full games</h3>
+      <div class="film" id="fullGrid"></div>
       <details class="vault rv" id="vault">
         <summary>Open the vault <span><b id="vaultCount">0</b> older games</span></summary>
         <div class="film" id="vaultGrid"></div>
       </details>
-    </div>
-  </section>
-
-  <section id="gram">
-    <div class="wrap">
-      <div class="head"><span class="no">05</span><h2>The Gram</h2><p>Latest from the team account.</p></div>
-      <div class="gram rv" id="gramCard"></div>
-      <div class="posts" id="posts"></div>
     </div>
   </section>
 </main>
@@ -673,6 +673,7 @@
   let W = 0, H = 0, floorY = 0, balls = [], running = false, dpr = 1, R = 24, score = 0, netKick = 0;
   const hoop = { bx: 0, top: 0, bot: 0, rimY: 0, front: 0, back: 0 };
   let held = null; const trail = [];
+  let G = .42, VMAX = 30;
   function size() {
     const r = cv.getBoundingClientRect();
     dpr = Math.min(devicePixelRatio || 1, 2); W = r.width; H = r.height; floorY = H - 112;
@@ -684,6 +685,7 @@
     hoop.back = hoop.bx - 6; hoop.front = hoop.back - rimW;
     hoop.top = hoop.rimY - R * 3.4; hoop.bot = hoop.rimY + R * .7;
     const bk = $('buckets'); bk.style.right = (W - hoop.bx + 4) + 'px'; bk.style.top = Math.max(8, hoop.top - 70) + 'px';
+    VMAX = Math.sqrt(2 * G * (floorY - hoop.rimY + R * 9));        // top speed clears the rim with room to spare
     balls.forEach((b) => { b.r = R; b.x = Math.min(b.x, W - R); b.y = Math.min(b.y, floorY - R); });
   }
   function drawHoop(front) {
@@ -743,9 +745,10 @@
     for (const b of balls) {
       if (b === held) continue;
       const py = b.y;
-      b.vy += 0.5; b.x += b.vx; b.y += b.vy; b.a += b.vx / b.r;
+      b.vy += G; b.x += b.vx; b.y += b.vy; b.a += b.vx / b.r;
+      if (b.air) { b.trail.push(b.x, b.y); if (b.trail.length > 24) b.trail.splice(0, 2); }
       // floor: one soft thud, then it rolls to a stop
-      if (b.y + b.r > floorY) { b.y = floorY - b.r; b.vy = Math.abs(b.vy) > 3 ? -b.vy * .32 : 0; b.vx *= .93; if (Math.abs(b.vx) < .05) b.vx = 0; }
+      if (b.y + b.r > floorY) { b.air = false; b.y = floorY - b.r; b.vy = Math.abs(b.vy) > 3 ? -b.vy * .32 : 0; b.vx *= .93; if (Math.abs(b.vx) < .05) b.vx = 0; }
       if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * .5; }
       if (b.x + b.r > W) { b.x = W - b.r; b.vx = -Math.abs(b.vx) * .5; }
       // backboard face
@@ -754,7 +757,7 @@
       // through the hoop from above
       if (b.vy > 0 && py <= h.rimY && b.y > h.rimY && b.x > h.front + 2 && b.x < h.back - 2 && !b.scored) { b.scored = true; b.vx *= .35; bucket(b); }
       if (b.y < h.rimY - b.r * 2 || b.y > h.rimY + R * 4) b.scored = false;
-      b.vx = Math.max(-34, Math.min(34, b.vx)); b.vy = Math.max(-38, Math.min(38, b.vy));
+      const sp = Math.hypot(b.vx, b.vy); if (sp > VMAX) { b.vx *= VMAX / sp; b.vy *= VMAX / sp; }
     }
     for (let i = 0; i < balls.length; i++) for (let j = i + 1; j < balls.length; j++) {
       const a = balls[i], b = balls[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), m = a.r + b.r;
@@ -767,40 +770,57 @@
     }
     if (netKick > 0) netKick -= .45;
   }
-  function loop() {
+  let lastT = 0, acc = 0;
+  function loop(t) {
     if (!running) return;
-    step();
+    acc += Math.min(80, t - (lastT || t)); lastT = t;
+    while (acc >= 16.667) { step(); acc -= 16.667; }
     ctx.clearRect(0, 0, W, H);
-    drawHoop(false); balls.forEach(drawBall); drawHoop(true);
+    drawHoop(false);
+    for (const b of balls) {                                       // fading streak behind a thrown ball
+      if (!b.air || b.trail.length < 4) continue;
+      for (let i = 0; i < b.trail.length; i += 2) { const k = i / b.trail.length; ctx.beginPath(); ctx.arc(b.trail[i], b.trail[i + 1], b.r * (.25 + k * .6), 0, 7); ctx.fillStyle = `rgba(240,184,74,${k * .16})`; ctx.fill(); }
+    }
+    balls.forEach(drawBall); drawHoop(true);
     requestAnimationFrame(loop);
   }
   function at(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
-  function pick(p) { let best = null, bd = 1e9; for (const b of balls) { const d = Math.hypot(b.x - p.x, b.y - p.y); if (d < b.r + 16 && d < bd) { best = b; bd = d; } } return best; }
+  function pick(p) { let best = null, bd = 1e9; for (const b of balls) { const d = Math.hypot(b.x - p.x, b.y - p.y); if (d < b.r + 22 && d < bd) { best = b; bd = d; } } return best; }
   size();
   const n = W < 600 ? 4 : 6;
-  for (let i = 0; i < n; i++) balls.push({ x: W * (.08 + .6 * i / (n - 1)), y: floorY - R, vx: 0, vy: 0, r: R, a: i * 1.3 });
+  for (let i = 0; i < n; i++) balls.push({ x: W * (.08 + .6 * i / (n - 1)), y: floorY - R, vx: 0, vy: 0, r: R, a: i * 1.3, trail: [], air: false });
   if (reduce) { ctx.clearRect(0, 0, W, H); drawHoop(false); balls.forEach(drawBall); drawHoop(true); $('hint').hidden = true; }
   else {
-    new IntersectionObserver((es) => { const on = es[0].isIntersecting; if (on && !running) { running = true; requestAnimationFrame(loop); } else if (!on) running = false; }).observe(cv);
+    new IntersectionObserver((es) => { const on = es[0].isIntersecting; if (on && !running) { running = true; requestAnimationFrame(loop); } else if (!on) { running = false; lastT = 0; } }).observe(cv);
     // On phones, only block page scrolling when the finger lands on a ball
     cv.addEventListener('touchstart', (e) => { const t = e.touches[0]; if (pick(at(t))) e.preventDefault(); }, { passive: false });
     cv.addEventListener('pointerdown', (e) => {
       const p = at(e), b = pick(p); if (!b) return;
-      held = b; b.vx = b.vy = 0; trail.length = 0; trail.push({ ...p, t: performance.now() });
+      held = b; b.vx = b.vy = 0; b.air = false; b.trail.length = 0; trail.length = 0; trail.push({ ...p, t: performance.now() });
       cv.setPointerCapture(e.pointerId); cv.classList.add('hold');
     });
     cv.addEventListener('pointermove', (e) => {
       if (!held) return; const p = at(e);
       held.a += (p.x - held.x) / held.r; held.x = Math.max(held.r, Math.min(W - held.r, p.x)); held.y = Math.min(floorY - held.r, p.y);
-      trail.push({ ...p, t: performance.now() }); if (trail.length > 6) trail.shift();
+      const now = performance.now(); trail.push({ ...p, t: now }); while (trail.length > 2 && now - trail[0].t > 140) trail.shift();
     });
     const release = () => {
       if (!held) return; cv.classList.remove('hold');
-      const last = trail[trail.length - 1], first = trail.find((q) => last.t - q.t < 90) || trail[0], dt = Math.max(16, last.t - first.t);
-      const still = performance.now() - last.t > 90;               // paused before letting go: just drop it
-      held.vx = still ? 0 : (last.x - first.x) / dt * 16.7; held.vy = still ? 0 : (last.y - first.y) / dt * 16.7; held.scored = false; held = null;
+      // Throw speed = how fast the hand was moving over the last moments before letting go.
+      // Recent movement counts more, so a quick snap at the end still launches the ball.
+      const now = performance.now(), last = trail[trail.length - 1];
+      let vx = 0, vy = 0, wsum = 0;
+      for (let i = 1; i < trail.length; i++) {
+        const a = trail[i - 1], c = trail[i], dt = c.t - a.t; if (dt <= 0 || now - c.t > 140) continue;
+        const w = 1 - (now - c.t) / 160; vx += (c.x - a.x) / dt * w; vy += (c.y - a.y) / dt * w; wsum += w;
+      }
+      const still = !wsum || now - last.t > 110;                   // held it in place, then let go: just drop it
+      held.vx = still ? 0 : vx / wsum * 16.667 * 1.35; held.vy = still ? 0 : vy / wsum * 16.667 * 1.35;
+      if (held.vy < -4) held.vy = Math.min(held.vy, -VMAX * .5);    // any real upward flick gets decent height
+      held.air = !still; held.trail.length = 0;
+      held.scored = false; held = null;
     };
-    cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release);
+    cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release); cv.addEventListener('lostpointercapture', release);
     addEventListener('resize', size);
   }
 })();
