@@ -73,5 +73,11 @@ window.SK = {
   ],
 
   /* handle without the @. posts: full links to Instagram posts or reels, newest first. */
-  instagram: { handle: 'swishkabobshoops', posts: [] }
+  instagram: { handle: 'swishkabobshoops',
+    posts: [
+      'https://www.instagram.com/p/DfOMca_giGK/',
+      'https://www.instagram.com/p/DfOMN9bBAnn/',
+      'https://www.instagram.com/p/DfOLjv5JhQs/'
+    ]
+   }
 };
