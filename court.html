@@ -864,10 +864,10 @@
     // Scrolling back up toward the court tosses the balls: the faster the scroll, the higher they lift
     let sY = scrollY, sT = performance.now();
     addEventListener('scroll', () => {
-      const now = performance.now(), dy = scrollY - sY, dt = Math.max(8, now - sT); sY = scrollY; sT = now;
+      const now = performance.now(), dy = scrollY - sY, dt = Math.min(50, Math.max(8, now - sT)); sY = scrollY; sT = now;   // first move of a new scroll counts as a short step
       if (dy >= 0 || !running) return;
-      const lift = Math.min(VMAX * .55, (-dy / dt) * 16.667 * .2);   // scroll speed in px per frame, scaled down
-      if (lift < 1.5) return;
+      const lift = Math.min(VMAX * .55, (-dy / dt) * 16.667 * .5);   // strong enough for a mouse wheel, capped for phone flicks   // scroll speed in px per frame, scaled down
+      if (lift < 1.2) return;
       for (const b of balls) {
         if (b === held) continue;
         const v = -lift * (.7 + Math.random() * .6);
