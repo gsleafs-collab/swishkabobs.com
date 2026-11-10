@@ -865,13 +865,16 @@
     // Only balls sitting on the floor get popped, so a long slow scroll can't keep boosting one that's already in the air.
     let sY = scrollY, sT = performance.now();
     addEventListener('scroll', () => {
-      const now = performance.now(), dy = scrollY - sY, dt = Math.min(50, Math.max(16, now - sT)); sY = scrollY; sT = now;
+      const now = performance.now(), dy = scrollY - sY, gap = now - sT, dt = gap > 120 ? 16.667 : Math.max(16, gap); sY = scrollY; sT = now;   // after a pause, treat the first move as one frame
       if (dy >= 0 || !running) return;
       const speed = (-dy / dt) * 16.667;                           // scroll speed in px per frame
       const lift = Math.min(VMAX * .5, (speed - 3) * .3);           // a crawl does nothing, a slow scroll is a tiny hop
       if (lift < 1) return;
       for (const b of balls) {
-        if (b === held || b.y + b.r < floorY - 1.5) continue;
+        // on the floor, or just leaving it and the scroll has sped up since the first pop
+        const onFloor = b.y + b.r > floorY - 1.5, faster = !onFloor && b.y + b.r > floorY - 45 && b.vy < 0 && lift > (b.pop || 0) * 1.3;
+        if (b === held || !(onFloor || faster)) continue;
+        b.pop = lift;
         b.vy = -lift * (.75 + Math.random() * .5); b.vx += (Math.random() - .5) * lift * .25;
       }
     }, { passive: true });
