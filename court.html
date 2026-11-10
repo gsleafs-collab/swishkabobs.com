@@ -96,7 +96,7 @@
     position: absolute; top: -11px; left: 0; width: 22px; height: 22px; border-radius: 50%;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23ee6123' stroke='%232b1206' stroke-width='1.6'/%3E%3Cg fill='none' stroke='%232b1206' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M1 12h22M12 1v22M4.2 4.2c4.2 4.4 4.2 11.2 0 15.6M19.8 4.2c-4.2 4.4-4.2 11.2 0 15.6'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
     box-shadow: 0 2px 6px rgba(0,0,0,.5);
-    will-change: transform;
+    will-change: transform; transition: opacity .3s;
   }
   .meter i {
     position: absolute; right: 6px; top: -3px; width: 26px; height: 5px; border-radius: 3px; background: var(--orange);
@@ -110,6 +110,8 @@
     transform-origin: top;
   }
   .meter.swish i::after { animation: net .6s ease-out; }
+  .meter.swish b { opacity: 0; transition: opacity .45s .35s; }
+  .meter i { z-index: 1; }
   @keyframes net { 30% { transform: scaleY(1.5) skewX(6deg); } 60% { transform: scaleY(.85) skewX(-4deg); } }
 
   /* ---------- Hero ---------- */
@@ -645,10 +647,18 @@
   function onScroll() {
     const max = document.documentElement.scrollHeight - innerHeight;
     const p = max > 0 ? Math.min(1, scrollY / max) : 0;
-    const track = meter.offsetWidth - 46;
-    mball.style.transform = `translateX(${p * track}px) translateY(${p > .985 ? 12 : 0}px) rotate(${p * 1440}deg)`;
-    if (p > .985 && !swished) { swished = true; meter.classList.add('swish'); }
-    if (p < .9 && swished) { swished = false; meter.classList.remove('swish'); }
+    // Rolls along the line, then the last stretch is a shot: up over the rim and down through the net
+    const xEnd = meter.offsetWidth - 30, run = Math.min(70, xEnd * .4), shot = .9;
+    let x, y = 0, sc = 1;
+    if (p <= shot) x = p / shot * (xEnd - run);
+    else {
+      const t = (p - shot) / (1 - shot), k = Math.min(1, t / .72);
+      x = xEnd - run + run * k;
+      y = 2 * (1 - t) * t * -42 + t * t * 9; sc = 1 - t * .12;
+    }
+    mball.style.transform = `translate(${x}px, ${y}px) rotate(${p * 1440}deg) scale(${sc})`;
+    if (p > .992 && !swished) { swished = true; meter.classList.add('swish'); }
+    if (p < .95 && swished) { swished = false; meter.classList.remove('swish'); }
     let cur = -1; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * .4) cur = i; });
     navLinks.forEach((a, i) => a.classList.toggle('on', i === cur));
   }
