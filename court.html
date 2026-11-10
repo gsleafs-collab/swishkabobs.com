@@ -693,12 +693,19 @@
      (0 is the line the balls sit on, positive is farther from the camera). */
   function drawCourt() {
     const rimX = (hoop.front + hoop.back) / 2, ppf = Math.max(12, Math.min(30, W / 46));
-    const hd = Math.max(200, Math.min(380, H * .42)), hz = floorY - hd, z0 = 40, vp = W * .5;
+    const hd = Math.max(200, Math.min(380, H * .42)), hz = floorY - hd, z0 = 40, vp = W * .4;
     const P = (u, v) => { const k = z0 / (z0 + Math.max(v, -26)); return [(vp + (rimX - (u - 5.25) * ppf - vp) * k).toFixed(1), (hz + hd * k).toFixed(1)]; };
     const d = (pts, close) => 'M' + pts.map((q) => q.join(' ')).join('L') + (close ? 'Z' : '');
     const arc = (cu, cv, r, a0, a1, n = 48) => { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push(P(cu + r * Math.cos(a), cv + r * Math.sin(a))); } return o; };
     const box = (u0, u1, v0, v1) => [P(u0, v0), P(u1, v0), P(u1, v1), P(u0, v1)];
-    const farY = +P(0, 32)[1], t3 = Math.asin(22 / 23.75);
+    const farY = +P(0, 50)[1], t3 = Math.asin(22 / 23.75);
+    // Painted artwork: flattened so it reads as lying on the floor from this low camera angle.
+    const art = (href, ratio, u, v, widthFt, squash) => {
+      const k = z0 / (z0 + v), c = P(u, v).map(Number), w = widthFt * ppf * k, h = w * ratio * squash;
+      return `<image href="${href}" x="${(c[0] - w / 2).toFixed(1)}" y="${(c[1] - h / 2).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="none"/>`;
+    };
+    const logoArt = art('logo-mark.png', 640 / 451, 47, 9.5, 8.5, .5);               // centre court
+    const wordArt = art('wordmark.png', 401 / 1000, W < 760 ? 12 : 19, 37, W < 760 ? 24 : 15, .62) + art('wordmark.png', 401 / 1000, 62, 37, 15, .62);   // far sideline
     let planks = '';
     for (let v = -24; v < 25; v += 1.25) planks += d([P(0, v), P(94, v)]);
     const lines = [
@@ -716,16 +723,15 @@
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.innerHTML = `<defs>
         <linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="${farY}" x2="0" y2="${H}"><stop offset="0" stop-color="#b47a3f"/><stop offset=".45" stop-color="#d49b5c"/><stop offset="1" stop-color="#e6b577"/></linearGradient>
-        <linearGradient id="haze" gradientUnits="userSpaceOnUse" x1="0" y1="${farY}" x2="0" y2="${floorY}"><stop offset="0" stop-color="#14181d" stop-opacity=".7"/><stop offset="1" stop-color="#14181d" stop-opacity="0"/></linearGradient>
+        <linearGradient id="haze" gradientUnits="userSpaceOnUse" x1="0" y1="${farY}" x2="0" y2="${floorY}"><stop offset="0" stop-color="#14181d" stop-opacity=".4"/><stop offset="1" stop-color="#14181d" stop-opacity="0"/></linearGradient>
       </defs>
-      <path d="${d(box(-80, 220, -26, 32), true)}" fill="#0a4a4f"/>
+      <path d="${d(box(-80, 220, -26, 50), true)}" fill="#0a4a4f"/>
       <path d="${d(box(0, 94, -25, 25), true)}" fill="url(#wood)"/>
       <path d="${planks}" stroke="rgba(60,30,8,.16)" stroke-width="1" fill="none"/>
       <path d="${d(box(0, 19, -8, 8), true)}" fill="#01686f" fill-opacity=".92"/>
-      <path d="${d(arc(47, 0, 6, 0, Math.PI * 2), true)}" fill="#ee6123" fill-opacity=".9"/>
-      <path d="${d(arc(47, 0, 2, 0, Math.PI * 2), true)}" fill="#14181d" fill-opacity=".85"/>
       <path d="${lines}" stroke="#fdf0c8" stroke-width="${W < 760 ? 2 : 3}" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
-      <path d="${d(box(-80, 220, -26, 32), true)}" fill="url(#haze)"/>`;
+      <g opacity=".94">${logoArt}${wordArt}</g>
+      <path d="${d(box(-80, 220, -26, 50), true)}" fill="url(#haze)"/>`;
   }
   function drawHoop(front) {
     const h = hoop;
