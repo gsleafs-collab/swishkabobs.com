@@ -663,18 +663,18 @@
     function frame(it, t) {
       const c = it.ctx, ph = it.ph; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
       // wind: positive blows right, negative blows left. It swings around over time and never matches the next jersey.
-      const wind = (q) => .6 * Math.sin(q * it.f1 * .3 + ph) + .4 * Math.sin(q * it.f2 * .3 + ph * 1.7) + it.lean;   // a slow breeze that drifts between left and right
+      const wind = (q) => .6 * Math.sin(q * it.f1 * 1.2 + ph) + .4 * Math.sin(q * it.f2 * 1.1 + ph * 1.7) + it.lean * .7;   // swings every 4 to 8 seconds   // a slow breeze that drifts between left and right
       const w = reduce ? 0 : wind(t);
       const gust = Math.min(1, Math.abs(w)), tt = t * it.sp;
-      const dt = it.lt ? Math.min(.1, t - it.lt) : 0; it.lt = t; it.band += w * dt * 30;
-      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(w * .024 * it.am); c.translate(-PX, -PY);
+      const dt = it.lt ? Math.min(.1, t - it.lt) : 0; it.lt = t; it.band += w * dt * 42;
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .026 * it.am); c.translate(-PX, -PY);
       // cloth: the jersey swings as one piece. Each row follows the breeze a moment after the row above it,
       // so the hem trails behind in a soft curve. Only a faint ripple and a slight billow sit on top of that.
       for (let y = 36; y < AH; y += 3) {
         const k = Math.max(0, (y - 66) / 248), k2 = Math.pow(k, 1.6);
-        const bend = reduce ? 0 : k2 * 11 * it.am * wind(t - k * .55);
-        const ripple = reduce ? 0 : k2 * (.5 + 1.1 * gust) * Math.sin(y * .026 - tt * 1.5 + ph) + k2 * (.8 + 1.2 * gust) * Math.sin(y * .011 - tt * .8 + ph * 2);
-        const puff = reduce ? 0 : k * .018 * gust * Math.sin(tt * .7 + ph * 3);                  // fabric filling with air, then relaxing
+        const bend = reduce ? 0 : k2 * 12 * it.am * wind(t - k * .5);
+        const ripple = reduce ? 0 : k2 * (.8 + 1.5 * gust) * Math.sin(y * .026 - tt * 1.9 + ph) + k2 * (1.2 + 1.8 * gust) * Math.sin(y * .011 - tt * 1.1 + ph * 2);
+        const puff = reduce ? 0 : k * .028 * gust * Math.sin(tt * .9 + ph * 3);                  // fabric filling with air, then relaxing
         c.drawImage(it.art, 0, y * S, LW * S, 3 * S, bend + ripple - LW * puff / 2, y, LW * (1 + puff), 3.6);
       }
       // folds: soft light and shadow bands sliding across the fabric with the wind
@@ -686,7 +686,7 @@
       c.restore();
       skewer(c);
       // the hook goes up and over the skewer, drawn last so it sits in front of it
-      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(w * .024 * it.am); c.translate(-PX, -PY);
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .026 * it.am); c.translate(-PX, -PY);
       hangerStroke(c, it.hanger, (q) => { q.beginPath(); q.arc(PX, PY, 8.2, Math.PI * 1.02, Math.PI * .12, false); q.quadraticCurveTo(PX + 9, PY + 15, PX, PY + 17); q.lineTo(PX, 45); }, 4);
       c.restore();
     }
