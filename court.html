@@ -602,20 +602,26 @@
         c.lineWidth = 4; c.beginPath(); c.moveTo(40, 0); c.bezierCurveTo(160, 180, 260, 240, 470, 520); c.moveTo(0, 300); c.bezierCurveTo(180, 250, 300, 330, 500, 250); c.stroke();
       }
       c.restore();
-      // trim: neck, arm holes, side piping
-      c.strokeStyle = GOLD; c.lineWidth = 4;
+      // sides: a solid black panel down each side, split from the map by one yellow stripe
+      c.save(); body(c); c.clip(); c.fillStyle = '#0a0c0f';
+      c.beginPath(); c.moveTo(40, 118); c.lineTo(83, 118); c.lineTo(79, 322); c.lineTo(40, 322); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(260, 118); c.lineTo(217, 118); c.lineTo(221, 322); c.lineTo(260, 322); c.closePath(); c.fill();
+      c.strokeStyle = GOLD; c.lineWidth = 3.5; c.lineCap = 'butt';
+      c.beginPath(); c.moveTo(83, 118); c.lineTo(79, 322); c.moveTo(217, 118); c.lineTo(221, 322); c.stroke();
+      c.restore(); c.lineCap = 'round';
+      // thin black binding on the neck and arm holes
+      c.strokeStyle = '#0a0c0f'; c.lineWidth = 3;
       c.beginPath(); c.moveTo(122, 51); c.quadraticCurveTo(150, 81, 178, 51); c.stroke();
       c.beginPath(); c.moveTo(97, 51); c.bezierCurveTo(99, 95, 69, 112, 63, 140); c.moveTo(203, 51); c.bezierCurveTo(201, 95, 231, 112, 237, 140); c.stroke();
-      c.lineWidth = 3; c.beginPath(); c.moveTo(73, 150); c.lineTo(70, 311); c.moveTo(227, 150); c.lineTo(230, 311); c.stroke();
       // name, number and star in the jersey style: yellow with a teal outline
       const word = (txt, y, size, maxW) => {
         c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
         if (w > maxW) { size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
         c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(5, size * .16); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
       };
-      if (name) word(name, 138, 30, 122);
-      word(String(num), 254, 116, 132);
-      star(c, 216, 290, 12, TEAL); star(c, 216, 290, 7, GOLD);
+      if (name) word(name, 138, 30, 112);
+      word(String(num), 254, 116, 122);
+      star(c, 202, 290, 12, TEAL); star(c, 202, 290, 7, GOLD);
       return o;
     }
     const items = cvs.map((cv, i) => ({ cv, i, ctx: cv.getContext('2d'), art: null, on: false }));
