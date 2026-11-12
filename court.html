@@ -285,16 +285,16 @@
     transform-style: preserve-3d; transition: transform .18s ease-out, box-shadow .2s; will-change: transform;
     display: flex; flex-direction: column; justify-content: flex-end; padding: 14px; -webkit-tap-highlight-color: transparent;
   }
-  .card:hover { box-shadow: 0 24px 44px rgba(0,0,0,.55); border-color: var(--orange); }
+  .card.hot { box-shadow: 0 24px 44px rgba(0,0,0,.55); border-color: var(--orange); }
   .card::before {
     content: attr(data-n); position: absolute; left: 50%; top: 40%; translate: -50% -50%;
     font-family: var(--display); font-size: clamp(110px, 19vw, 170px); line-height: 1; color: transparent;
     background: linear-gradient(180deg, var(--gold), var(--orange)); -webkit-background-clip: text; background-clip: text;
     transition: transform .4s cubic-bezier(.3,1.6,.5,1);
   }
-  .card:hover::before, .card.flip::before { transform: scale(1.12) rotate(-5deg); }
+  .card.hot::before, .card.flip::before { transform: scale(1.12) rotate(-5deg); }
   .card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.22), transparent 45%); opacity: 0; transition: opacity .2s; pointer-events: none; }
-  .card:hover::after { opacity: 1; }
+  .card.hot::after { opacity: 1; }
   /* Jersey cards: the number is replaced by the jersey hanging on the rack */
   .card.jersey::before { content: none; }
   .card.jersey { background: linear-gradient(180deg, #0c0f12, #1a2027 70%, var(--ink-2)); }
@@ -304,7 +304,7 @@
   @media (max-width: 460px) { .card.jersey .nm { font-size: 17px; } .card.jersey .nm.long { font-size: 15px; } .card.jersey { padding: 10px; } }
   .card.jersey .ps.auto { display: none; }                         /* the jersey already shows the number */
   .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
-  @media (hover: hover) and (pointer: fine) { .card.jersey:hover canvas.jz { transform: scale(1.04) rotate(-2deg); } }
+  .card.jersey.hot canvas.jz { transform: scale(1.04) rotate(-2deg); }
   .card.jersey.shut canvas.jz { transform: none; }
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .card .nm { position: relative; font-family: var(--cond); font-weight: 700; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
@@ -315,7 +315,7 @@
     transform: translateY(101%); transition: transform .4s cubic-bezier(.3,1.3,.5,1);
   }
   .card.flip .back { transform: none; }
-  @media (hover: hover) and (pointer: fine) { .card:hover .back { transform: none; } }   /* hover only where there is a real mouse */
+  .card.hot .back { transform: none; }                             /* .hot = a real mouse is moving over the card */
   .card.shut .back { transform: translateY(101%); }                /* clicked closed: stays closed until clicked again */
   .card .back div { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid rgba(20,24,29,.2); font-family: var(--cond); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: 14px; }
   .card .back b { font-family: var(--display); font-weight: 400; font-size: 30px; letter-spacing: 0; }
@@ -574,18 +574,22 @@
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
       </div></div>`).join('');
   const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // Scrolling puts every card back to rest, so nothing flips or tilts as cards pass under the cursor
+  addEventListener('scroll', () => document.querySelectorAll('.card.hot').forEach((c) => { c.classList.remove('hot', 'shut'); c.style.transform = ''; }), { passive: true });
   document.querySelectorAll('.card').forEach((c) => {
     c.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse' || reduce) return;
+      if (e.pointerType !== 'mouse' || (!e.movementX && !e.movementY)) return;   // ignore the fake moves browsers send while the page scrolls
+      c.classList.add('hot');
+      if (reduce) return;
       const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
       c.style.transform = `rotateY(${(x - .5) * 22}deg) rotateX(${(.5 - y) * 22}deg) translateZ(12px)`;
       c.style.setProperty('--mx', x * 100 + '%'); c.style.setProperty('--my', y * 100 + '%');
     });
-    c.addEventListener('pointerleave', (e) => { c.style.transform = ''; if (e.pointerType === 'mouse') c.classList.remove('shut', 'flip'); });
+    c.addEventListener('pointerleave', (e) => { c.style.transform = ''; if (e.pointerType === 'mouse') c.classList.remove('shut', 'flip', 'hot'); });
     // One click or tap shows the stats, the next one closes them and brings the jersey back.
     // With a mouse the stats are already showing on hover, so the first click closes them.
     c.addEventListener('click', () => {
-      if (canHover && c.matches(':hover')) { c.classList.remove('flip'); c.classList.toggle('shut'); }
+      if (canHover && c.classList.contains('hot')) { c.classList.remove('flip'); c.classList.toggle('shut'); }
       else { c.classList.remove('shut'); c.classList.toggle('flip'); }
     });
     c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.classList.remove('shut'); c.classList.toggle('flip'); } });
@@ -641,7 +645,11 @@
     const rnd = (i, n) => { const v = Math.sin((i + 1) * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
     const items = cvs.map((cv, n) => { const i = +cv.dataset.i || n; return { cv, i, ctx: cv.getContext('2d'), art: null, on: false, band: rnd(i, 9) * 400, lt: 0,
       hanger: TEAL, lean: (i % 2 ? 1 : -1) * (.2 + .25 * rnd(i, 6)), sp: .75 + .6 * rnd(i, 1), am: .8 + .45 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
-    function size(it) { const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200; it.cv.width = Math.round(w * d); it.cv.height = Math.round(w * LH / LW * d); it.k = it.cv.width / LW; }
+    function size(it) {
+      const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200, cw = Math.round(w * d), ch = Math.round(w * LH / LW * d);
+      if (it.cv.width === cw && it.cv.height === ch) return false;   // setting the size wipes the canvas, so skip it when nothing changed
+      it.cv.width = cw; it.cv.height = ch; it.k = cw / LW; return true;
+    }
     function skewer(c) {                                           // the rail: a kabob skewer, like the one in the logo
       c.lineJoin = 'round';
       c.beginPath(); c.moveTo(30, PY - 3.2); c.lineTo(258, PY - 3.2); c.lineTo(290, PY); c.lineTo(258, PY + 3.2); c.lineTo(30, PY + 3.2); c.closePath();
@@ -691,7 +699,7 @@
     const map = new Promise((res) => { const im = new Image(); im.onload = () => { tex = im; res(); }; im.onerror = res; im.src = 'jersey-map.png'; });
     Promise.all([font, map]).then(start);
     items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; if (!it.on) it.lt = 0; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
-    addEventListener('resize', () => { items.forEach(size); kick(); });
+    addEventListener('resize', () => { items.forEach((it) => { if (size(it) && it.art) frame(it, performance.now() / 1000); }); kick(); });
   })();
 
   /* ----- Film ----- */
