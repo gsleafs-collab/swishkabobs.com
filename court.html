@@ -298,7 +298,8 @@
   /* Jersey cards: the number is replaced by the jersey hanging on the rack */
   .card.jersey::before { content: none; }
   .card.jersey { background: linear-gradient(180deg, #0c0f12, #1a2027 70%, var(--ink-2)); }
-  .card canvas.jz { position: absolute; left: 0; top: 0; width: 100%; height: auto; aspect-ratio: 300 / 330; pointer-events: none; transition: transform .4s cubic-bezier(.3,1.6,.5,1); transform-origin: 50% 8%; }
+  .card canvas.jz { position: absolute; left: 0; top: 0; width: 100%; height: auto; aspect-ratio: 300 / 340; pointer-events: none; transition: transform .4s cubic-bezier(.3,1.6,.5,1); transform-origin: 50% 6%; }
+  .card.jersey .ps.auto { display: none; }                         /* the jersey already shows the number */
   .card.jersey:hover canvas.jz, .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .card .nm { position: relative; font-family: var(--cond); font-weight: 700; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
@@ -555,11 +556,13 @@
   $('statsNote').innerHTML = `Player numbers cover the ${Math.max(...P.map((p) => p.gp))} filmed games, tracked by jersey number. Source: <a href="${T.tcbl}" target="_blank" rel="noopener">tcbl.ca</a>.`;
 
   /* ----- Roster ----- */
+  const lastName = (p) => (p.name || '').trim().split(/\s+/).pop().toUpperCase();
+  const jname = (p) => { const ln = lastName(p); return ln && P.filter((q) => lastName(q) === ln).length > 1 ? p.name.trim()[0].toUpperCase() + '. ' + ln : ln; };   // J. HEALY, S. HEALY
   const JERSEYS = (p) => [2].includes(p.num);                      // draft: jersey cards switched on for these numbers only
   $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv${JERSEYS(p) ? ' jersey' : ''}" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
       ${p.photo ? `<img class="ph" src="${esc(p.photo)}" alt="">` : ''}
-      ${JERSEYS(p) ? `<canvas class="jz" data-num="${p.num}" data-name="${esc((p.name || '').trim().split(/\s+/).pop().toUpperCase())}" role="img" aria-label="${esc(pname(p))} jersey, number ${p.num}"></canvas>` : ''}
-      <div class="nm${pname(p).length > 18 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps">${esc(p.pos || '#' + p.num)}</div>
+      ${JERSEYS(p) ? `<canvas class="jz" data-i="${i}" data-num="${p.num}" data-name="${esc(jname(p))}" role="img" aria-label="${esc(pname(p))} jersey, number ${p.num}"></canvas>` : ''}
+      <div class="nm${pname(p).length > 18 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps${p.pos ? '' : ' auto'}">${esc(p.pos || '#' + p.num)}</div>
       <div class="back">
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
       </div></div>`).join('');
@@ -574,47 +577,41 @@
     c.addEventListener('click', () => c.classList.toggle('flip'));
   });
 
-  /* ----- Jerseys on the rack, blowing in the wind ----- */
+  /* ----- Jerseys on the skewer, blowing in the wind ----- */
   (() => {
     const cvs = [...document.querySelectorAll('canvas.jz')]; if (!cvs.length) return;
-    const LW = 300, LH = 330, S = 3;                               // drawing size, and the detail the jersey is painted at
-    const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d';
-    const body = (c) => { c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 80, 178, 50); c.lineTo(204, 50); c.bezierCurveTo(202, 95, 232, 112, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 112, 98, 95, 96, 50); c.closePath(); };
+    const LW = 300, LH = 340, AH = 330, S = 3;                     // card drawing size, jersey artwork height, artwork detail
+    const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d', PX = 150, PY = 20;   // PX, PY: where the hook sits on the skewer
+    // Shoulders slope along the hanger arms so the straps sit on it properly
+    const body = (c) => { c.beginPath(); c.moveTo(96, 64.5); c.lineTo(122, 51); c.quadraticCurveTo(150, 80, 178, 51); c.lineTo(204, 64.5); c.bezierCurveTo(204, 104, 232, 116, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 116, 96, 104, 96, 64.5); c.closePath(); };
+    const arms = (c) => { c.beginPath(); c.moveTo(80, 78); c.quadraticCurveTo(112, 52, 150, 44); c.quadraticCurveTo(188, 52, 220, 78); };
     const star = (c, x, y, r, col) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fillStyle = col; c.fill(); };
+    const hangerStroke = (c, col, path, w) => { c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#07090b'; c.lineWidth = w + 2.4; path(c); c.stroke(); c.strokeStyle = col; c.lineWidth = w; path(c); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = 1.2; c.save(); c.translate(0, -w * .22); path(c); c.stroke(); c.restore(); };
     let tex = null;                                               // street map artwork, loaded before the jerseys are painted
-    function paint(name, num) {                                    // the back of one jersey, painted once
-      const o = document.createElement('canvas'); o.width = LW * S; o.height = LH * S;
+    function paint(name, num, hanger) {                            // the back of one jersey on its hanger, painted once
+      const o = document.createElement('canvas'); o.width = LW * S; o.height = AH * S;
       const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
-      // hanger arms and the inside of the front panel, seen through the neck
-      c.strokeStyle = '#e9edf1'; c.lineWidth = 5; c.beginPath(); c.moveTo(82, 76); c.lineTo(150, 44); c.lineTo(218, 76); c.stroke();
-      c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 112, 178, 50); c.lineTo(204, 50); c.lineTo(204, 120); c.lineTo(96, 120); c.closePath(); c.fillStyle = '#0d1014'; c.fill();
-      c.strokeStyle = 'rgba(233,237,241,.9)'; c.lineWidth = 4; c.beginPath(); c.moveTo(123, 57); c.lineTo(150, 44); c.lineTo(177, 57); c.stroke();
+      // inside of the front panel seen through the neck, then the hanger resting inside the shoulders
+      c.beginPath(); c.moveTo(96, 64.5); c.lineTo(122, 51); c.quadraticCurveTo(150, 118, 178, 51); c.lineTo(204, 64.5); c.lineTo(204, 126); c.lineTo(96, 126); c.closePath(); c.fillStyle = '#0d1014'; c.fill();
+      hangerStroke(c, hanger, arms, 6);
       // fabric with the street map
       body(c); c.fillStyle = DARK; c.fill();
       c.save(); body(c); c.clip();
       if (tex) c.drawImage(tex, 39, 50, 222, 262);                // the real street map from the jersey artwork
-      else {
-        let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-        c.translate(150, 180); c.rotate(-.33); c.translate(-250, -260); c.strokeStyle = '#59606b';
-        const ys = []; for (let y = 0; y < 520; y += 8 + rnd() * 13) ys.push(y);
-        ys.forEach((y) => { c.lineWidth = rnd() < .18 ? 3.2 : 1.7; c.beginPath(); c.moveTo(0, y); c.lineTo(500, y + (rnd() - .5) * 14); c.stroke(); });
-        for (let x = 0; x < 500; x += 6 + rnd() * 13) { const a = Math.floor(rnd() * ys.length), b = Math.min(ys.length - 1, a + 2 + Math.floor(rnd() * 12)); c.lineWidth = rnd() < .15 ? 3.2 : 1.6; c.beginPath(); c.moveTo(x, ys[a]); c.lineTo(x + (rnd() - .5) * 8, ys[b]); c.stroke(); }
-        c.lineWidth = 4; c.beginPath(); c.moveTo(40, 0); c.bezierCurveTo(160, 180, 260, 240, 470, 520); c.moveTo(0, 300); c.bezierCurveTo(180, 250, 300, 330, 500, 250); c.stroke();
-      }
+      else { c.strokeStyle = '#59606b'; c.lineWidth = 2; for (let i = -300; i < 600; i += 16) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i + 110, 340); c.moveTo(0, i); c.lineTo(300, i - 90); c.stroke(); } }
       c.restore();
-      // sides: a solid black panel down each side, split from the map by one yellow stripe
+      // sides: a slim black panel down each side, split from the map by one yellow stripe
       c.save(); body(c); c.clip(); c.fillStyle = '#0a0c0f';
       c.beginPath(); c.moveTo(40, 122); c.lineTo(72, 122); c.lineTo(68, 322); c.lineTo(40, 322); c.closePath(); c.fill();
       c.beginPath(); c.moveTo(260, 122); c.lineTo(228, 122); c.lineTo(232, 322); c.lineTo(260, 322); c.closePath(); c.fill();
       c.strokeStyle = GOLD; c.lineWidth = 3; c.lineCap = 'butt';
       c.beginPath(); c.moveTo(72, 122); c.lineTo(68, 322); c.moveTo(228, 122); c.lineTo(232, 322); c.stroke();
       c.restore(); c.lineCap = 'round';
-      // thin black binding on the neck and arm holes
+      // thin black binding on the neck, shoulders and arm holes
       c.strokeStyle = '#0a0c0f'; c.lineWidth = 3;
-      c.beginPath(); c.moveTo(122, 51); c.quadraticCurveTo(150, 81, 178, 51); c.stroke();
-      c.beginPath(); c.moveTo(97, 51); c.bezierCurveTo(99, 95, 69, 112, 63, 140); c.moveTo(203, 51); c.bezierCurveTo(201, 95, 231, 112, 237, 140); c.stroke();
-      // name, number and star in the jersey style: yellow with a teal outline
-      // Sizes measured off the Brar artwork, as a share of the jersey width (184 here):
+      c.beginPath(); c.moveTo(96.5, 65); c.lineTo(122, 52); c.quadraticCurveTo(150, 81, 178, 52); c.lineTo(203.5, 65); c.stroke();
+      c.beginPath(); c.moveTo(97, 65); c.bezierCurveTo(97, 104, 69, 116, 63, 140); c.moveTo(203, 65); c.bezierCurveTo(203, 104, 231, 116, 237, 140); c.stroke();
+      // Lettering sizes measured off the Brar artwork, as a share of the jersey width (184 here):
       // number 33% tall with a 1.2% outline, name 12% tall with a 1% outline, centres 35% apart.
       const word = (txt, y, size, maxW, edge) => {
         c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
@@ -626,41 +623,55 @@
       star(c, 205, 293, 11, TEAL); star(c, 205, 293, 6.5, GOLD);
       return o;
     }
-    const items = cvs.map((cv, i) => ({ cv, i, ctx: cv.getContext('2d'), art: null, on: false }));
+    // Every jersey gets its own wind: its own strength, rhythm and the side it mostly blows from
+    const rnd = (i, n) => { const v = Math.sin((i + 1) * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+    const items = cvs.map((cv, n) => { const i = +cv.dataset.i || n; return { cv, i, ctx: cv.getContext('2d'), art: null, on: false, band: rnd(i, 9) * 400, lt: 0,
+      hanger: i % 2 ? TEAL : GOLD, lean: (i % 2 ? 1 : -1) * (.2 + .25 * rnd(i, 6)), sp: .75 + .6 * rnd(i, 1), am: .8 + .45 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
     function size(it) { const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200; it.cv.width = Math.round(w * d); it.cv.height = Math.round(w * LH / LW * d); it.k = it.cv.width / LW; }
+    function skewer(c) {                                           // the rail: a kabob skewer, like the one in the logo
+      c.lineJoin = 'round';
+      c.beginPath(); c.moveTo(30, PY - 3.2); c.lineTo(258, PY - 3.2); c.lineTo(290, PY); c.lineTo(258, PY + 3.2); c.lineTo(30, PY + 3.2); c.closePath();
+      c.fillStyle = 'rgba(0,0,0,.35)'; c.save(); c.translate(0, 4); c.fill(); c.restore();
+      c.fillStyle = DARK; c.fill(); c.strokeStyle = GOLD; c.lineWidth = 1.8; c.stroke();
+      c.beginPath(); c.rect(29, PY - 5.5, 8, 11); c.fillStyle = GOLD; c.fill();                              // collar
+      c.beginPath(); c.arc(19, PY, 9.5, 0, 7); c.fillStyle = GOLD; c.fill();                                 // ring handle
+      c.beginPath(); c.arc(19, PY, 6.6, 0, 7); c.fillStyle = DARK; c.fill();
+      c.beginPath(); c.arc(19, PY, 3.2, 0, 7); c.fillStyle = GOLD; c.fill();
+    }
     function frame(it, t) {
-      const c = it.ctx, ph = it.i * 1.9; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
-      const gust = reduce ? 0 : .5 + .5 * Math.sin(t * .55 + ph * 1.7) * Math.sin(t * .23 + ph);          // wind comes and goes
-      const sway = reduce ? 0 : Math.sin(t * .9 + ph) * .012 + gust * .014;
-      c.save(); c.translate(150, 0); c.scale(.93, .93); c.translate(-150, 0);   // leave room under the jersey for the name
-      c.translate(150, 20); c.rotate(sway); c.translate(-150, -20);
+      const c = it.ctx, ph = it.ph; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
+      // wind: positive blows right, negative blows left. It swings around over time and never matches the next jersey.
+      const w = reduce ? 0 : .6 * Math.sin(t * it.f1 * .35 + ph) + .45 * Math.sin(t * it.f2 * .35 + ph * 1.7) + it.lean;
+      const gust = Math.min(1, Math.abs(w)), tt = t * it.sp;
+      const dt = it.lt ? Math.min(.1, t - it.lt) : 0; it.lt = t; it.band += w * dt * 70;
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(w * .03 * it.am + (reduce ? 0 : Math.sin(tt * .9 + ph) * .008)); c.translate(-PX, -PY);
       // cloth: thin rows, each pushed sideways a little more the farther it hangs from the hanger
-      for (let y = 40; y < LH; y += 2) {
-        const k = Math.max(0, (y - 52) / 262), amp = Math.pow(k, 1.35) * (3 + 6 * gust);
-        const dx = reduce ? 0 : Math.sin(y * .045 - t * 3.4 + ph) * amp * .55 + Math.sin(y * .018 - t * 1.9 + ph * 2) * amp + k * k * 7 * gust;
+      for (let y = 36; y < AH; y += 2) {
+        const k = Math.max(0, (y - 66) / 248), amp = Math.pow(k, 1.35) * (2 + 5.5 * gust) * it.am;
+        const dx = reduce ? 0 : Math.sin(y * .045 - tt * 3.4 + ph) * amp * .55 + Math.sin(y * .018 - tt * 1.9 + ph * 2) * amp + k * k * 9 * w * it.am;
         c.drawImage(it.art, 0, y * S, LW * S, 2 * S, dx, y, LW, 2.6);
       }
-      // folds: soft light and shadow bands sliding across the fabric only
+      // folds: soft light and shadow bands sliding across the fabric with the wind
       if (!reduce) { c.globalCompositeOperation = 'source-atop';
-        for (let b = 0; b < 3; b++) { const cx = ((t * 46 + b * 130 + ph * 40) % 420) - 60, g = c.createLinearGradient(cx - 50, 0, cx + 50, 40);
-          g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.3, `rgba(255,255,255,${.05 + .07 * gust})`); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(.72, `rgba(0,0,0,${.12 + .12 * gust})`); g.addColorStop(1, 'rgba(0,0,0,0)');
-          c.fillStyle = g; c.fillRect(0, 84, LW, LH); }
+        for (let b = 0; b < 3; b++) { const cx = ((((it.band + b * 130) % 420) + 420) % 420) - 60, g = c.createLinearGradient(cx - 50, 0, cx + 50, 40);
+          g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.3, `rgba(255,255,255,${.04 + .07 * gust})`); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(.72, `rgba(0,0,0,${.1 + .13 * gust})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+          c.fillStyle = g; c.fillRect(0, 96, LW, LH); }
         c.globalCompositeOperation = 'source-over'; }
-      // hanger hook
-      c.strokeStyle = '#e9edf1'; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.moveTo(150, 45); c.lineTo(150, 33); c.arc(150, 23, 10, Math.PI / 2, Math.PI * 1.1, true); c.stroke();
       c.restore();
-      // the rail it hangs from
-      const g = c.createLinearGradient(0, 9, 0, 17); g.addColorStop(0, '#f2f4f6'); g.addColorStop(1, '#8b939c'); c.fillStyle = g; c.fillRect(0, 9, LW, 7);
-      c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 16, LW, 3);
+      skewer(c);
+      // the hook goes up and over the skewer, drawn last so it sits in front of it
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(w * .03 * it.am + (reduce ? 0 : Math.sin(tt * .9 + ph) * .008)); c.translate(-PX, -PY);
+      hangerStroke(c, it.hanger, (q) => { q.beginPath(); q.arc(PX, PY, 8.2, Math.PI * 1.02, Math.PI * .12, false); q.quadraticCurveTo(PX + 9, PY + 15, PX, PY + 17); q.lineTo(PX, 45); }, 4);
+      c.restore();
     }
     let raf = 0;
     function loop(ms) { raf = 0; let any = false; for (const it of items) if (it.on && it.art) { frame(it, ms / 1000); any = true; } if (any && !reduce) raf = requestAnimationFrame(loop); }
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
-    const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num); }); kick(); };
+    const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num, it.hanger); }); kick(); };
     const font = document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve();
     const map = new Promise((res) => { const im = new Image(); im.onload = () => { tex = im; res(); }; im.onerror = res; im.src = 'jersey-map.png'; });
     Promise.all([font, map]).then(start);
-    items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
+    items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; if (!it.on) it.lt = 0; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
     addEventListener('resize', () => { items.forEach(size); kick(); });
   })();
 
