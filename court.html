@@ -303,7 +303,9 @@
   .card.jersey .nm.long { font-size: 17px; }
   @media (max-width: 460px) { .card.jersey .nm { font-size: 17px; } .card.jersey .nm.long { font-size: 15px; } .card.jersey { padding: 10px; } }
   .card.jersey .ps.auto { display: none; }                         /* the jersey already shows the number */
-  .card.jersey:hover canvas.jz, .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
+  .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
+  @media (hover: hover) and (pointer: fine) { .card.jersey:hover canvas.jz { transform: scale(1.04) rotate(-2deg); } }
+  .card.jersey.shut canvas.jz { transform: none; }
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .card .nm { position: relative; font-family: var(--cond); font-weight: 700; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
   .card .nm.long { font-size: 17px; }
@@ -312,7 +314,9 @@
     position: absolute; inset: 0; background: rgba(255,103,31,.96); color: #14181d; padding: 14px; display: grid; align-content: center; gap: 6px;
     transform: translateY(101%); transition: transform .4s cubic-bezier(.3,1.3,.5,1);
   }
-  .card:hover .back, .card.flip .back { transform: none; }
+  .card.flip .back { transform: none; }
+  @media (hover: hover) and (pointer: fine) { .card:hover .back { transform: none; } }   /* hover only where there is a real mouse */
+  .card.shut .back { transform: translateY(101%); }                /* clicked closed: stays closed until clicked again */
   .card .back div { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid rgba(20,24,29,.2); font-family: var(--cond); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: 14px; }
   .card .back b { font-family: var(--display); font-weight: 400; font-size: 30px; letter-spacing: 0; }
 
@@ -569,6 +573,7 @@
       <div class="back">
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
       </div></div>`).join('');
+  const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
   document.querySelectorAll('.card').forEach((c) => {
     c.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse' || reduce) return;
@@ -576,8 +581,14 @@
       c.style.transform = `rotateY(${(x - .5) * 22}deg) rotateX(${(.5 - y) * 22}deg) translateZ(12px)`;
       c.style.setProperty('--mx', x * 100 + '%'); c.style.setProperty('--my', y * 100 + '%');
     });
-    c.addEventListener('pointerleave', () => { c.style.transform = ''; });
-    c.addEventListener('click', () => c.classList.toggle('flip'));
+    c.addEventListener('pointerleave', (e) => { c.style.transform = ''; if (e.pointerType === 'mouse') c.classList.remove('shut', 'flip'); });
+    // One click or tap shows the stats, the next one closes them and brings the jersey back.
+    // With a mouse the stats are already showing on hover, so the first click closes them.
+    c.addEventListener('click', () => {
+      if (canHover && c.matches(':hover')) { c.classList.remove('flip'); c.classList.toggle('shut'); }
+      else { c.classList.remove('shut'); c.classList.toggle('flip'); }
+    });
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.classList.remove('shut'); c.classList.toggle('flip'); } });
   });
 
   /* ----- Jerseys on the skewer, blowing in the wind ----- */
