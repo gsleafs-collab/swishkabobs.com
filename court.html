@@ -644,7 +644,7 @@
     // Every jersey gets its own wind: its own strength, rhythm and the side it mostly blows from
     const rnd = (i, n) => { const v = Math.sin((i + 1) * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
     const items = cvs.map((cv, n) => { const i = +cv.dataset.i || n; return { cv, i, ctx: cv.getContext('2d'), art: null, on: false, band: rnd(i, 9) * 400, lt: 0,
-      hanger: TEAL, lean: (i % 2 ? 1 : -1) * (.2 + .25 * rnd(i, 6)), sp: .75 + .6 * rnd(i, 1), am: .8 + .45 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
+      hanger: TEAL, lean: -.95 + 1.9 * ((i * .618034 + .31) % 1), osc: .8 + .4 * rnd(i, 6), flap: .1 + .3 * rnd(i, 7), f3: 3 + 2.2 * rnd(i, 8), rip: .6 + 1.1 * rnd(i, 10), sp: .75 + .6 * rnd(i, 1), am: .82 + .3 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
     function size(it) {
       const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200, cw = Math.round(w * d), ch = Math.round(w * LH / LW * d);
       if (it.cv.width === cw && it.cv.height === ch) return false;   // setting the size wipes the canvas, so skip it when nothing changed
@@ -663,17 +663,19 @@
     function frame(it, t) {
       const c = it.ctx, ph = it.ph; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
       // wind: positive blows right, negative blows left. It swings around over time and never matches the next jersey.
-      const wind = (q) => .6 * Math.sin(q * it.f1 * 1.2 + ph) + .4 * Math.sin(q * it.f2 * 1.1 + ph * 1.7) + it.lean * .7;   // swings every 4 to 8 seconds   // a slow breeze that drifts between left and right
+      // Each jersey has its own prevailing wind (lean: hard left through to hard right, no two the same), its own
+      // swing around that direction, and some have a quicker flutter on top. The result is eased so it never overshoots the card.
+      const wind = (q) => 1.5 * Math.tanh((it.lean + it.osc * (.6 * Math.sin(q * it.f1 * 1.2 + ph) + .4 * Math.sin(q * it.f2 * 1.1 + ph * 1.7)) + it.flap * Math.sin(q * it.f3 + ph * .7)) / 1.2);
       const w = reduce ? 0 : wind(t);
       const gust = Math.min(1, Math.abs(w)), tt = t * it.sp;
       const dt = it.lt ? Math.min(.1, t - it.lt) : 0; it.lt = t; it.band += w * dt * 42;
-      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .026 * it.am); c.translate(-PX, -PY);
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .045 * it.am); c.translate(-PX, -PY);
       // cloth: the jersey swings as one piece. Each row follows the breeze a moment after the row above it,
       // so the hem trails behind in a soft curve. Only a faint ripple and a slight billow sit on top of that.
       for (let y = 36; y < AH; y += 3) {
         const k = Math.max(0, (y - 66) / 248), k2 = Math.pow(k, 1.6);
-        const bend = reduce ? 0 : k2 * 12 * it.am * wind(t - k * .5);
-        const ripple = reduce ? 0 : k2 * (.8 + 1.5 * gust) * Math.sin(y * .026 - tt * 1.9 + ph) + k2 * (1.2 + 1.8 * gust) * Math.sin(y * .011 - tt * 1.1 + ph * 2);
+        const bend = reduce ? 0 : k2 * 14 * it.am * wind(t - k * .5);
+        const ripple = reduce ? 0 : it.rip * (k2 * (.8 + 1.5 * gust) * Math.sin(y * .026 - tt * 1.9 + ph) + k2 * (1.2 + 1.8 * gust) * Math.sin(y * .011 - tt * 1.1 + ph * 2));
         const puff = reduce ? 0 : k * .028 * gust * Math.sin(tt * .9 + ph * 3);                  // fabric filling with air, then relaxing
         c.drawImage(it.art, 0, y * S, LW * S, 3 * S, bend + ripple - LW * puff / 2, y, LW * (1 + puff), 3.6);
       }
@@ -686,7 +688,7 @@
       c.restore();
       skewer(c);
       // the hook goes up and over the skewer, drawn last so it sits in front of it
-      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .026 * it.am); c.translate(-PX, -PY);
+      c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(-w * .045 * it.am); c.translate(-PX, -PY);
       hangerStroke(c, it.hanger, (q) => { q.beginPath(); q.arc(PX, PY, 8.2, Math.PI * 1.02, Math.PI * .12, false); q.quadraticCurveTo(PX + 9, PY + 15, PX, PY + 17); q.lineTo(PX, 45); }, 4);
       c.restore();
     }
