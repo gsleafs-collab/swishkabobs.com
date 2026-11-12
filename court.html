@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  @font-face { font-family: "Montserrat"; font-weight: 900; src: url("montserrat-900.woff2") format("woff2"); font-display: swap; }
   @font-face { font-family: "Yellowtail"; src: url("yellowtail.woff2") format("woff2"); font-display: swap; }
   :root {
     --ink: #101316;
@@ -294,6 +295,11 @@
   .card:hover::before, .card.flip::before { transform: scale(1.12) rotate(-5deg); }
   .card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.22), transparent 45%); opacity: 0; transition: opacity .2s; pointer-events: none; }
   .card:hover::after { opacity: 1; }
+  /* Jersey cards: the number is replaced by the jersey hanging on the rack */
+  .card.jersey::before { content: none; }
+  .card.jersey { background: linear-gradient(180deg, #0c0f12, #1a2027 70%, var(--ink-2)); }
+  .card canvas.jz { position: absolute; left: 0; top: 0; width: 100%; height: auto; aspect-ratio: 300 / 330; pointer-events: none; transition: transform .4s cubic-bezier(.3,1.6,.5,1); transform-origin: 50% 8%; }
+  .card.jersey:hover canvas.jz, .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .card .nm { position: relative; font-family: var(--cond); font-weight: 700; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
   .card .nm.long { font-size: 17px; }
@@ -549,8 +555,10 @@
   $('statsNote').innerHTML = `Player numbers cover the ${Math.max(...P.map((p) => p.gp))} filmed games, tracked by jersey number. Source: <a href="${T.tcbl}" target="_blank" rel="noopener">tcbl.ca</a>.`;
 
   /* ----- Roster ----- */
-  $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
+  const JERSEYS = (p) => [2].includes(p.num);                      // draft: jersey cards switched on for these numbers only
+  $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv${JERSEYS(p) ? ' jersey' : ''}" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
       ${p.photo ? `<img class="ph" src="${esc(p.photo)}" alt="">` : ''}
+      ${JERSEYS(p) ? `<canvas class="jz" data-num="${p.num}" data-name="${esc((p.name || '').trim().split(/\s+/).pop().toUpperCase())}" role="img" aria-label="${esc(pname(p))} jersey, number ${p.num}"></canvas>` : ''}
       <div class="nm${pname(p).length > 18 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps">${esc(p.pos || '#' + p.num)}</div>
       <div class="back">
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
@@ -565,6 +573,82 @@
     c.addEventListener('pointerleave', () => { c.style.transform = ''; });
     c.addEventListener('click', () => c.classList.toggle('flip'));
   });
+
+  /* ----- Jerseys on the rack, blowing in the wind ----- */
+  (() => {
+    const cvs = [...document.querySelectorAll('canvas.jz')]; if (!cvs.length) return;
+    const LW = 300, LH = 330, S = 2;                               // drawing size, and the detail the jersey is painted at
+    const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d';
+    const body = (c) => { c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 80, 178, 50); c.lineTo(204, 50); c.bezierCurveTo(202, 95, 232, 112, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 112, 98, 95, 96, 50); c.closePath(); };
+    const star = (c, x, y, r, col) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fillStyle = col; c.fill(); };
+    function paint(name, num) {                                    // the back of one jersey, painted once
+      const o = document.createElement('canvas'); o.width = LW * S; o.height = LH * S;
+      const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
+      // hanger arms and the inside of the front panel, seen through the neck
+      c.strokeStyle = '#e9edf1'; c.lineWidth = 5; c.beginPath(); c.moveTo(82, 76); c.lineTo(150, 44); c.lineTo(218, 76); c.stroke();
+      c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 112, 178, 50); c.lineTo(204, 50); c.lineTo(204, 120); c.lineTo(96, 120); c.closePath(); c.fillStyle = '#0d1014'; c.fill();
+      c.strokeStyle = 'rgba(233,237,241,.9)'; c.lineWidth = 4; c.beginPath(); c.moveTo(123, 57); c.lineTo(150, 44); c.lineTo(177, 57); c.stroke();
+      // fabric with the street map
+      body(c); c.fillStyle = DARK; c.fill();
+      c.save(); body(c); c.clip();
+      let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      c.translate(150, 180); c.rotate(-.33); c.translate(-250, -260); c.strokeStyle = '#59606b';
+      const ys = []; for (let y = 0; y < 520; y += 8 + rnd() * 13) ys.push(y);
+      ys.forEach((y) => { c.lineWidth = rnd() < .18 ? 3.2 : 1.7; c.beginPath(); c.moveTo(0, y); c.lineTo(500, y + (rnd() - .5) * 14); c.stroke(); });
+      for (let x = 0; x < 500; x += 6 + rnd() * 13) { const a = Math.floor(rnd() * ys.length), b = Math.min(ys.length - 1, a + 2 + Math.floor(rnd() * 12)); c.lineWidth = rnd() < .15 ? 3.2 : 1.6; c.beginPath(); c.moveTo(x, ys[a]); c.lineTo(x + (rnd() - .5) * 8, ys[b]); c.stroke(); }
+      c.lineWidth = 4; c.beginPath(); c.moveTo(40, 0); c.bezierCurveTo(160, 180, 260, 240, 470, 520); c.moveTo(0, 300); c.bezierCurveTo(180, 250, 300, 330, 500, 250); c.stroke();
+      c.restore();
+      // trim: neck, arm holes, side piping
+      c.strokeStyle = GOLD; c.lineWidth = 4;
+      c.beginPath(); c.moveTo(122, 51); c.quadraticCurveTo(150, 81, 178, 51); c.stroke();
+      c.beginPath(); c.moveTo(97, 51); c.bezierCurveTo(99, 95, 69, 112, 63, 140); c.moveTo(203, 51); c.bezierCurveTo(201, 95, 231, 112, 237, 140); c.stroke();
+      c.lineWidth = 3; c.beginPath(); c.moveTo(73, 150); c.lineTo(70, 311); c.moveTo(227, 150); c.lineTo(230, 311); c.stroke();
+      // name, number and star in the jersey style: yellow with a teal outline
+      const word = (txt, y, size, maxW) => {
+        c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
+        if (w > maxW) { size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
+        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(5, size * .16); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
+      };
+      if (name) word(name, 142, 30, 122);
+      word(String(num), 254, 116, 132);
+      star(c, 216, 290, 12, TEAL); star(c, 216, 290, 7, GOLD);
+      return o;
+    }
+    const items = cvs.map((cv, i) => ({ cv, i, ctx: cv.getContext('2d'), art: null, on: false }));
+    function size(it) { const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200; it.cv.width = Math.round(w * d); it.cv.height = Math.round(w * LH / LW * d); it.k = it.cv.width / LW; }
+    function frame(it, t) {
+      const c = it.ctx, ph = it.i * 1.9; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
+      const gust = reduce ? 0 : .5 + .5 * Math.sin(t * .55 + ph * 1.7) * Math.sin(t * .23 + ph);          // wind comes and goes
+      const sway = reduce ? 0 : Math.sin(t * .9 + ph) * .012 + gust * .014;
+      c.save(); c.translate(150, 0); c.scale(.86, .86); c.translate(-150, 0);   // leave room under the jersey for the name
+      c.translate(150, 20); c.rotate(sway); c.translate(-150, -20);
+      // cloth: thin rows, each pushed sideways a little more the farther it hangs from the hanger
+      for (let y = 40; y < LH; y += 2) {
+        const k = Math.max(0, (y - 52) / 262), amp = Math.pow(k, 1.35) * (3 + 6 * gust);
+        const dx = reduce ? 0 : Math.sin(y * .045 - t * 3.4 + ph) * amp * .55 + Math.sin(y * .018 - t * 1.9 + ph * 2) * amp + k * k * 7 * gust;
+        c.drawImage(it.art, 0, y * S, LW * S, 2 * S, dx, y, LW, 2.6);
+      }
+      // folds: soft light and shadow bands sliding across the fabric only
+      if (!reduce) { c.globalCompositeOperation = 'source-atop';
+        for (let b = 0; b < 3; b++) { const cx = ((t * 46 + b * 130 + ph * 40) % 420) - 60, g = c.createLinearGradient(cx - 50, 0, cx + 50, 40);
+          g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.3, `rgba(255,255,255,${.05 + .07 * gust})`); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(.72, `rgba(0,0,0,${.12 + .12 * gust})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+          c.fillStyle = g; c.fillRect(0, 84, LW, LH); }
+        c.globalCompositeOperation = 'source-over'; }
+      // hanger hook
+      c.strokeStyle = '#e9edf1'; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.moveTo(150, 45); c.lineTo(150, 33); c.arc(150, 23, 10, Math.PI / 2, Math.PI * 1.1, true); c.stroke();
+      c.restore();
+      // the rail it hangs from
+      const g = c.createLinearGradient(0, 9, 0, 17); g.addColorStop(0, '#f2f4f6'); g.addColorStop(1, '#8b939c'); c.fillStyle = g; c.fillRect(0, 9, LW, 7);
+      c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 16, LW, 3);
+    }
+    let raf = 0;
+    function loop(ms) { raf = 0; let any = false; for (const it of items) if (it.on && it.art) { frame(it, ms / 1000); any = true; } if (any && !reduce) raf = requestAnimationFrame(loop); }
+    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num); }); kick(); };
+    (document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve()).then(start);
+    items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
+    addEventListener('resize', () => { items.forEach(size); kick(); });
+  })();
 
   /* ----- Film ----- */
   const ytCard = (v, i, idAttr) => `<div class="vid rv" style="--d:${i % 3}"${idAttr || ''}>
