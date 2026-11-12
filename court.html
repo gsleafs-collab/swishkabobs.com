@@ -299,6 +299,9 @@
   .card.jersey::before { content: none; }
   .card.jersey { background: linear-gradient(180deg, #0c0f12, #1a2027 70%, var(--ink-2)); }
   .card canvas.jz { position: absolute; left: 0; top: 0; width: 100%; height: auto; aspect-ratio: 300 / 340; pointer-events: none; transition: transform .4s cubic-bezier(.3,1.6,.5,1); transform-origin: 50% 6%; }
+  .card.jersey .nm { font-size: 19px; white-space: nowrap; }
+  .card.jersey .nm.long { font-size: 17px; }
+  @media (max-width: 460px) { .card.jersey .nm { font-size: 17px; } .card.jersey .nm.long { font-size: 15px; } .card.jersey { padding: 10px; } }
   .card.jersey .ps.auto { display: none; }                         /* the jersey already shows the number */
   .card.jersey:hover canvas.jz, .card.jersey.flip canvas.jz { transform: scale(1.04) rotate(-2deg); }
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -558,11 +561,11 @@
   /* ----- Roster ----- */
   const lastName = (p) => (p.name || '').trim().split(/\s+/).pop().toUpperCase();
   const jname = (p) => { const ln = lastName(p); return ln && P.filter((q) => lastName(q) === ln).length > 1 ? p.name.trim()[0].toUpperCase() + '. ' + ln : ln; };   // J. HEALY, S. HEALY
-  const JERSEYS = (p) => [2].includes(p.num);                      // draft: jersey cards switched on for these numbers only
+  const JERSEYS = (p) => !p.photo;                                // every player gets a jersey card (a photo, if added, takes its place)
   $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv${JERSEYS(p) ? ' jersey' : ''}" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
       ${p.photo ? `<img class="ph" src="${esc(p.photo)}" alt="">` : ''}
       ${JERSEYS(p) ? `<canvas class="jz" data-i="${i}" data-num="${p.num}" data-name="${esc(jname(p))}" role="img" aria-label="${esc(pname(p))} jersey, number ${p.num}"></canvas>` : ''}
-      <div class="nm${pname(p).length > 18 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps${p.pos ? '' : ' auto'}">${esc(p.pos || '#' + p.num)}</div>
+      <div class="nm${pname(p).length > 14 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps${p.pos ? '' : ' auto'}">${esc(p.pos || '#' + p.num)}</div>
       <div class="back">
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
       </div></div>`).join('');
@@ -626,7 +629,7 @@
     // Every jersey gets its own wind: its own strength, rhythm and the side it mostly blows from
     const rnd = (i, n) => { const v = Math.sin((i + 1) * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
     const items = cvs.map((cv, n) => { const i = +cv.dataset.i || n; return { cv, i, ctx: cv.getContext('2d'), art: null, on: false, band: rnd(i, 9) * 400, lt: 0,
-      hanger: i % 2 ? TEAL : GOLD, lean: (i % 2 ? 1 : -1) * (.2 + .25 * rnd(i, 6)), sp: .75 + .6 * rnd(i, 1), am: .8 + .45 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
+      hanger: TEAL, lean: (i % 2 ? 1 : -1) * (.2 + .25 * rnd(i, 6)), sp: .75 + .6 * rnd(i, 1), am: .8 + .45 * rnd(i, 2), ph: rnd(i, 3) * 20, f1: .5 + .7 * rnd(i, 4), f2: 1.3 + 1.1 * rnd(i, 5) }; });
     function size(it) { const d = Math.min(devicePixelRatio || 1, 2), w = it.cv.clientWidth || 200; it.cv.width = Math.round(w * d); it.cv.height = Math.round(w * LH / LW * d); it.k = it.cv.width / LW; }
     function skewer(c) {                                           // the rail: a kabob skewer, like the one in the logo
       c.lineJoin = 'round';
@@ -646,10 +649,10 @@
       const dt = it.lt ? Math.min(.1, t - it.lt) : 0; it.lt = t; it.band += w * dt * 70;
       c.save(); c.translate(PX, PY); c.scale(1.06, 1.06); c.rotate(w * .03 * it.am + (reduce ? 0 : Math.sin(tt * .9 + ph) * .008)); c.translate(-PX, -PY);
       // cloth: thin rows, each pushed sideways a little more the farther it hangs from the hanger
-      for (let y = 36; y < AH; y += 2) {
+      for (let y = 36; y < AH; y += 3) {
         const k = Math.max(0, (y - 66) / 248), amp = Math.pow(k, 1.35) * (2 + 5.5 * gust) * it.am;
         const dx = reduce ? 0 : Math.sin(y * .045 - tt * 3.4 + ph) * amp * .55 + Math.sin(y * .018 - tt * 1.9 + ph * 2) * amp + k * k * 9 * w * it.am;
-        c.drawImage(it.art, 0, y * S, LW * S, 2 * S, dx, y, LW, 2.6);
+        c.drawImage(it.art, 0, y * S, LW * S, 3 * S, dx, y, LW, 3.6);
       }
       // folds: soft light and shadow bands sliding across the fabric with the wind
       if (!reduce) { c.globalCompositeOperation = 'source-atop';
@@ -665,7 +668,12 @@
       c.restore();
     }
     let raf = 0;
-    function loop(ms) { raf = 0; let any = false; for (const it of items) if (it.on && it.art) { frame(it, ms / 1000); any = true; } if (any && !reduce) raf = requestAnimationFrame(loop); }
+    let tick = 0;
+    function loop(ms) {
+      raf = 0; tick++; const live = items.filter((it) => it.on && it.art), half = live.length > 6;   // many on screen: redraw half of them each frame to stay smooth
+      for (const it of live) if (!half || (it.i + tick) % 2 === 0 || !it.lt) frame(it, ms / 1000);
+      if (live.length && !reduce) raf = requestAnimationFrame(loop);
+    }
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num, it.hanger); }); kick(); };
     const font = document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve();
