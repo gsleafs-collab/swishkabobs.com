@@ -614,13 +614,15 @@
       c.beginPath(); c.moveTo(122, 51); c.quadraticCurveTo(150, 81, 178, 51); c.stroke();
       c.beginPath(); c.moveTo(97, 51); c.bezierCurveTo(99, 95, 69, 112, 63, 140); c.moveTo(203, 51); c.bezierCurveTo(201, 95, 231, 112, 237, 140); c.stroke();
       // name, number and star in the jersey style: yellow with a teal outline
-      const word = (txt, y, size, maxW) => {
+      // Sizes measured off the Brar artwork, as a share of the jersey width (184 here):
+      // number 33% tall with a 1.2% outline, name 12% tall with a 1% outline, centres 35% apart.
+      const word = (txt, y, size, maxW, edge) => {
         c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
-        if (w > maxW) { size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
-        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(4, size * .15); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
+        if (w > maxW) { edge *= maxW / w; size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
+        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = edge * 2; c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
       };
-      if (name) word(name, 140, 40, 140);
-      word(String(num), 262, 124, 134);
+      if (name) word(name, 139, 31.5, 146, 1.9);
+      word(String(num), 222.5, 87, 140, 2.3);
       star(c, 205, 293, 11, TEAL); star(c, 205, 293, 6.5, GOLD);
       return o;
     }
