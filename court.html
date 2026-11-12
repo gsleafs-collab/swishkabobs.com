@@ -577,7 +577,7 @@
   /* ----- Jerseys on the rack, blowing in the wind ----- */
   (() => {
     const cvs = [...document.querySelectorAll('canvas.jz')]; if (!cvs.length) return;
-    const LW = 300, LH = 330, S = 2;                               // drawing size, and the detail the jersey is painted at
+    const LW = 300, LH = 330, S = 3;                               // drawing size, and the detail the jersey is painted at
     const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d';
     const body = (c) => { c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 80, 178, 50); c.lineTo(204, 50); c.bezierCurveTo(202, 95, 232, 112, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 112, 98, 95, 96, 50); c.closePath(); };
     const star = (c, x, y, r, col) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fillStyle = col; c.fill(); };
@@ -604,10 +604,10 @@
       c.restore();
       // sides: a solid black panel down each side, split from the map by one yellow stripe
       c.save(); body(c); c.clip(); c.fillStyle = '#0a0c0f';
-      c.beginPath(); c.moveTo(40, 118); c.lineTo(83, 118); c.lineTo(79, 322); c.lineTo(40, 322); c.closePath(); c.fill();
-      c.beginPath(); c.moveTo(260, 118); c.lineTo(217, 118); c.lineTo(221, 322); c.lineTo(260, 322); c.closePath(); c.fill();
-      c.strokeStyle = GOLD; c.lineWidth = 3.5; c.lineCap = 'butt';
-      c.beginPath(); c.moveTo(83, 118); c.lineTo(79, 322); c.moveTo(217, 118); c.lineTo(221, 322); c.stroke();
+      c.beginPath(); c.moveTo(40, 122); c.lineTo(72, 122); c.lineTo(68, 322); c.lineTo(40, 322); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(260, 122); c.lineTo(228, 122); c.lineTo(232, 322); c.lineTo(260, 322); c.closePath(); c.fill();
+      c.strokeStyle = GOLD; c.lineWidth = 3; c.lineCap = 'butt';
+      c.beginPath(); c.moveTo(72, 122); c.lineTo(68, 322); c.moveTo(228, 122); c.lineTo(232, 322); c.stroke();
       c.restore(); c.lineCap = 'round';
       // thin black binding on the neck and arm holes
       c.strokeStyle = '#0a0c0f'; c.lineWidth = 3;
@@ -617,11 +617,11 @@
       const word = (txt, y, size, maxW) => {
         c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
         if (w > maxW) { size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
-        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(5, size * .16); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
+        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(4, size * .15); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
       };
-      if (name) word(name, 138, 30, 112);
-      word(String(num), 254, 116, 122);
-      star(c, 202, 290, 12, TEAL); star(c, 202, 290, 7, GOLD);
+      if (name) word(name, 140, 40, 140);
+      word(String(num), 262, 124, 134);
+      star(c, 205, 293, 11, TEAL); star(c, 205, 293, 6.5, GOLD);
       return o;
     }
     const items = cvs.map((cv, i) => ({ cv, i, ctx: cv.getContext('2d'), art: null, on: false }));
@@ -630,7 +630,7 @@
       const c = it.ctx, ph = it.i * 1.9; c.setTransform(it.k, 0, 0, it.k, 0, 0); c.clearRect(0, 0, LW, LH);
       const gust = reduce ? 0 : .5 + .5 * Math.sin(t * .55 + ph * 1.7) * Math.sin(t * .23 + ph);          // wind comes and goes
       const sway = reduce ? 0 : Math.sin(t * .9 + ph) * .012 + gust * .014;
-      c.save(); c.translate(150, 0); c.scale(.86, .86); c.translate(-150, 0);   // leave room under the jersey for the name
+      c.save(); c.translate(150, 0); c.scale(.93, .93); c.translate(-150, 0);   // leave room under the jersey for the name
       c.translate(150, 20); c.rotate(sway); c.translate(-150, -20);
       // cloth: thin rows, each pushed sideways a little more the farther it hangs from the hanger
       for (let y = 40; y < LH; y += 2) {
