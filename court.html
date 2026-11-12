@@ -581,6 +581,7 @@
     const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d';
     const body = (c) => { c.beginPath(); c.moveTo(96, 50); c.lineTo(122, 50); c.quadraticCurveTo(150, 80, 178, 50); c.lineTo(204, 50); c.bezierCurveTo(202, 95, 232, 112, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 112, 98, 95, 96, 50); c.closePath(); };
     const star = (c, x, y, r, col) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fillStyle = col; c.fill(); };
+    let tex = null;                                               // street map artwork, loaded before the jerseys are painted
     function paint(name, num) {                                    // the back of one jersey, painted once
       const o = document.createElement('canvas'); o.width = LW * S; o.height = LH * S;
       const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
@@ -591,12 +592,15 @@
       // fabric with the street map
       body(c); c.fillStyle = DARK; c.fill();
       c.save(); body(c); c.clip();
-      let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      c.translate(150, 180); c.rotate(-.33); c.translate(-250, -260); c.strokeStyle = '#59606b';
-      const ys = []; for (let y = 0; y < 520; y += 8 + rnd() * 13) ys.push(y);
-      ys.forEach((y) => { c.lineWidth = rnd() < .18 ? 3.2 : 1.7; c.beginPath(); c.moveTo(0, y); c.lineTo(500, y + (rnd() - .5) * 14); c.stroke(); });
-      for (let x = 0; x < 500; x += 6 + rnd() * 13) { const a = Math.floor(rnd() * ys.length), b = Math.min(ys.length - 1, a + 2 + Math.floor(rnd() * 12)); c.lineWidth = rnd() < .15 ? 3.2 : 1.6; c.beginPath(); c.moveTo(x, ys[a]); c.lineTo(x + (rnd() - .5) * 8, ys[b]); c.stroke(); }
-      c.lineWidth = 4; c.beginPath(); c.moveTo(40, 0); c.bezierCurveTo(160, 180, 260, 240, 470, 520); c.moveTo(0, 300); c.bezierCurveTo(180, 250, 300, 330, 500, 250); c.stroke();
+      if (tex) c.drawImage(tex, 39, 50, 222, 262);                // the real street map from the jersey artwork
+      else {
+        let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        c.translate(150, 180); c.rotate(-.33); c.translate(-250, -260); c.strokeStyle = '#59606b';
+        const ys = []; for (let y = 0; y < 520; y += 8 + rnd() * 13) ys.push(y);
+        ys.forEach((y) => { c.lineWidth = rnd() < .18 ? 3.2 : 1.7; c.beginPath(); c.moveTo(0, y); c.lineTo(500, y + (rnd() - .5) * 14); c.stroke(); });
+        for (let x = 0; x < 500; x += 6 + rnd() * 13) { const a = Math.floor(rnd() * ys.length), b = Math.min(ys.length - 1, a + 2 + Math.floor(rnd() * 12)); c.lineWidth = rnd() < .15 ? 3.2 : 1.6; c.beginPath(); c.moveTo(x, ys[a]); c.lineTo(x + (rnd() - .5) * 8, ys[b]); c.stroke(); }
+        c.lineWidth = 4; c.beginPath(); c.moveTo(40, 0); c.bezierCurveTo(160, 180, 260, 240, 470, 520); c.moveTo(0, 300); c.bezierCurveTo(180, 250, 300, 330, 500, 250); c.stroke();
+      }
       c.restore();
       // trim: neck, arm holes, side piping
       c.strokeStyle = GOLD; c.lineWidth = 4;
@@ -609,7 +613,7 @@
         if (w > maxW) { size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
         c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = Math.max(5, size * .16); c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
       };
-      if (name) word(name, 142, 30, 122);
+      if (name) word(name, 138, 30, 122);
       word(String(num), 254, 116, 132);
       star(c, 216, 290, 12, TEAL); star(c, 216, 290, 7, GOLD);
       return o;
@@ -645,7 +649,9 @@
     function loop(ms) { raf = 0; let any = false; for (const it of items) if (it.on && it.art) { frame(it, ms / 1000); any = true; } if (any && !reduce) raf = requestAnimationFrame(loop); }
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num); }); kick(); };
-    (document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve()).then(start);
+    const font = document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve();
+    const map = new Promise((res) => { const im = new Image(); im.onload = () => { tex = im; res(); }; im.onerror = res; im.src = 'jersey-map.png'; });
+    Promise.all([font, map]).then(start);
     items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
     addEventListener('resize', () => { items.forEach(size); kick(); });
   })();
