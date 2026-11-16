@@ -715,7 +715,7 @@
   const res = (g) => `${g.us > g.them ? 'W' : 'L'} ${g.us}-${g.them}`;
   $('fullGrid').innerHTML = D.games.filter((g) => g.yt).map((g, i) => { const x = md(g.date); return ytCard({ id: g.yt, title: 'vs ' + g.opp, tag: `Full game · ${x.m} ${x.d} · ${res(g)}` }, i, ` id="g-${g.date}"`); }).join('');
   $('hlGrid').innerHTML = D.games.filter((g) => g.hl).map((g, i) => { const x = md(g.date); return `<div class="vid rv" style="--d:${i % 3}">
-      <div class="frame"><video controls preload="none" playsinline poster="https://cdn.filestackcontent.com/${esc(g.poster)}"><source src="https://api.sportsvisio-api.com/media/${esc(g.hl)}/game_highlights/highlights90secs.mp4" type="video/mp4"></video></div>
+      <div class="frame"><video controls preload="none" playsinline poster="highlights/${esc(g.poster)}.jpg"><source src="https://api.sportsvisio-api.com/media/${esc(g.hl)}/game_highlights/highlights90secs.mp4" type="video/mp4"></video></div>
       <div class="cap"><small>Highlights · ${x.m} ${x.d} · ${res(g)}</small><h3>vs ${esc(g.opp)}</h3></div></div>`; }).join('');
   const vault = D.videos || [];
   $('vaultCount').textContent = vault.length;
