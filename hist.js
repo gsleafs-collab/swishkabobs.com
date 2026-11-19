@@ -111,7 +111,7 @@ window.SKH = {
       {"k": "s", "opp": "Grim Reapers", "us": 44, "them": 50, "note": "Score from the league video title", "yt": ["7MqCM2zmsYY"]},
       {"k": "p", "opp": "Swish Cheese", "us": 48, "them": 45, "rnd": "Playoffs", "note": "Score from the league video title", "yt": ["-Z1yXHeyudM"]}
     ] },
-    {"year": 2026, "term": "Spring", "league": "MSL", "result": "5 Seed, Lost Consolation Final", "note": "Game results not recorded", games: [] },
+    {"year": 2026, "term": "Spring", "league": "MSL", "result": "5 Seed, Lost Consolation Bracket", "note": "Game results not recorded", games: [] },
     {"year": 2026, "term": "Summer", "league": "MSL", "result": "4 Seed, Lost in Semifinals (forfeited 3rd place game)", games: [
       {"k": "s", "opp": "Stormtroopers", "us": 51, "them": 77},
       {"k": "s", "opp": "Dreamville", "us": 35, "them": 95},
@@ -122,7 +122,7 @@ window.SKH = {
       {"k": "s", "opp": "Tour Dates", "us": 68, "them": 86},
       {"k": "p", "opp": "Stormtroopers", "us": 71, "them": 82, "rnd": "Semi-Finals"}
     ] },
-    {"year": 2026, "term": "Fall", "league": "TCBL", "result": "9 Seed, Won Consolation Game", "note": "No league film for the first three games", games: [
+    {"year": 2026, "term": "Fall", "league": "TCBL", "result": "9 Seed, Won Consolation Bracket", "note": "No league film for the first three games", games: [
       {"k": "s", "opp": "Craves Rec", "us": 55, "them": 48, "yt": ["-_aGGWI5jSg"]},
       {"k": "s", "opp": "Mark & Arthur", "us": 47, "them": 51, "yt": ["VmGpiZwfbk0"]},
       {"k": "s", "opp": "VSS", "us": 55, "them": 57, "yt": ["3gINNuFOJZ8"]},
