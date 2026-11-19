@@ -1126,7 +1126,7 @@
     const span = SEAS[0].year + '–' + String(SEAS[SEAS.length - 1].year).slice(2);
     const career = totals(boxed);
     const first = SEAS.find((s) => s.games.some((g) => g.box));
-    $('bkPlayers').textContent = career.length; $('bkSince').textContent = first.year;
+    $('bkPlayers').textContent = career.length; $('bkSince').textContent = SEAS[0].year;
     function mark() { shelf.forEach((b) => { const on = !panel.hidden && b.dataset.book === tab; b.classList.toggle('on', on); b.setAttribute('aria-expanded', String(on)); }); }
     show();
     function openPanel(t) {
@@ -1173,7 +1173,7 @@
         return `<div class="bk-fx-card" style="--k:${k};--cx:calc(var(--bw) * ${(o * .38).toFixed(2)});--cy:calc(var(--bw) * ${(-.18 + Math.abs(o) * .07).toFixed(2)});--cr:${o * 9}deg"><b>${nums[p.name] != null ? '#' + nums[p.name] : p.gp}</b><span>${esc(p.name)}</span></div>`; }).join('');
       return shell + spine(KAB, 'The Kabobs') +
         `<div class="bk-fx-block"><small>Career stats</small><b>${career.length} players</b><span>${boxed.length} box scores</span><hr></div>` +
-        cover(`${KAB}<b>The Kabobs</b><span>Career stats · since ${first.year}</span>`, `<b>Swish on three!</b><span>The whole roster</span>`) + cards;
+        cover(`${KAB}<b>The Kabobs</b><span>Career stats · since ${SEAS[0].year}</span>`, `<b>Swish on three!</b><span>The whole roster</span>`) + cards;
     }
     let busy = false;
     function play(btn, t) {
