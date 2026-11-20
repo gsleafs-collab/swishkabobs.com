@@ -999,8 +999,6 @@
       const k = KIT[kit] || KIT.dark;
       const o = document.createElement('canvas'); o.width = LW * S; o.height = AH * S;
       const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
-      // a warm gold light behind the jersey, just spilling round its edges
-      c.save(); c.shadowColor = 'rgba(241,180,52,.42)'; c.shadowBlur = 26; body(c); c.fillStyle = k.base; c.fill(); c.shadowColor = 'rgba(255,214,120,.25)'; c.shadowBlur = 10; c.fill(); c.restore();
       hangerStroke(c, hanger, arms, 6);                            // the hanger sits inside, showing through the back neck
       // fabric: the template scaled to the jersey's height, centred
       body(c); c.fillStyle = k.base; c.fill();
