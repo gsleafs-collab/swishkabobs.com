@@ -878,7 +878,7 @@
 
   /* ----- Roster ----- */
   const lastName = (p) => (p.name || '').trim().split(/\s+/).pop().toUpperCase();
-  const jname = (p) => { const ln = lastName(p); return ln && P.filter((q) => lastName(q) === ln).length > 1 ? p.name.trim()[0].toUpperCase() + '. ' + ln : ln; };   // J. HEALY, S. HEALY
+  const jname = lastName;                                          // last names only on the jerseys, even for the two Healys
   const JERSEYS = (p) => !p.photo;                                // every player gets a jersey card (a photo, if added, takes its place)
   $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv${JERSEYS(p) ? ' jersey' : ''}" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
       ${p.photo ? `<img class="ph" src="${esc(p.photo)}" alt="">` : ''}
@@ -1009,9 +1009,8 @@
       g.addColorStop(0, 'rgba(0,0,0,.30)'); g.addColorStop(.14, 'rgba(0,0,0,.06)'); g.addColorStop(.42, 'rgba(255,255,255,.05)'); g.addColorStop(.7, 'rgba(0,0,0,0)'); g.addColorStop(.88, 'rgba(0,0,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,.32)');
       c.fillStyle = g; c.fillRect(JX - 2, JY, JW + 4, JH + 6);
       c.restore();
-      // edges: the white side shows the navy reverse at the neck, arm holes and hem, the black side just a faint rim
-      if (k.trim) { c.strokeStyle = k.trim; c.lineWidth = 2; neck(c); c.stroke(); holes(c); c.stroke(); hem(c); c.stroke(); }
-      else { c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 1; body(c); c.stroke(); }
+            // gold trim all the way round, in the site's gold, with a soft glow
+      c.save(); c.strokeStyle = GOLD; c.shadowColor = 'rgba(241,180,52,.8)'; c.shadowBlur = 9; c.lineWidth = 2.2; body(c); c.stroke(); c.shadowBlur = 0; c.lineWidth = 1.6; body(c); c.stroke(); c.restore();
       if (crest) { const r = JW * .075; c.drawImage(crest, 150 - r / 2, JY + JH * .11 - r / 2, r, r); }
       const word = (txt, cy, cap, maxW, font, ratio, edge, wt) => {   // centre a line of lettering on its cap height
         let size = cap / ratio; c.font = `${wt} ${size}px ${font}`; const w = c.measureText(txt).width;
