@@ -19,6 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: "Montserrat"; font-weight: 900; src: url("montserrat-900.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Montserrat"; font-weight: 600; src: url("montserrat-600.woff2") format("woff2"); font-display: swap; }
   @font-face { font-family: "Yellowtail"; src: url("yellowtail.woff2") format("woff2"); font-display: swap; }
   :root {
     --ink: #101316;
@@ -889,47 +890,54 @@
     const cvs = [...document.querySelectorAll('canvas.jz')]; if (!cvs.length) return;
     const LW = 300, LH = 340, AH = 330, S = 3;                     // card drawing size, jersey artwork height, artwork detail
     const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d', PX = 150, PY = 20;   // PX, PY: where the hook sits on the skewer
-    // Shoulders slope along the hanger arms so the straps sit on it properly
-    const body = (c) => { c.beginPath(); c.moveTo(96, 64.5); c.lineTo(122, 51); c.quadraticCurveTo(150, 80, 178, 51); c.lineTo(204, 64.5); c.bezierCurveTo(204, 104, 232, 116, 238, 140); c.lineTo(242, 312); c.quadraticCurveTo(150, 322, 58, 312); c.lineTo(62, 140); c.bezierCurveTo(68, 116, 96, 104, 96, 64.5); c.closePath(); };
-    const arms = (c) => { c.beginPath(); c.moveTo(80, 78); c.quadraticCurveTo(112, 52, 150, 44); c.quadraticCurveTo(188, 52, 220, 78); };
-    const star = (c, x, y, r, col) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fillStyle = col; c.fill(); };
+    // Jersey back, traced off the official render: a tall, narrow tank (width is 51% of the height),
+    // shallow back neck, short shoulder straps and arm holes that open a third of the way down.
+    const JX = 78.5, JY = 46, JW = 143, JH = 280, q = (x, y) => [JX + x * JW, JY + y * JH];
+    const body = (c) => { const m = (x, y) => c.moveTo(...q(x, y)), l = (x, y) => c.lineTo(...q(x, y)), qc = (a, b, x, y) => c.quadraticCurveTo(...q(a, b), ...q(x, y)), bc = (a, b, d, e, x, y) => c.bezierCurveTo(...q(a, b), ...q(d, e), ...q(x, y));
+      c.beginPath(); m(.26, 0); qc(.5, .1, .74, 0); l(.9, .038); qc(.93, .046, .925, .06); qc(.898, .1, .902, .17); bc(.904, .25, .95, .31, 1, .335); l(1.006, .985); qc(1.004, 1, .96, 1.002); qc(.5, 1.014, .04, 1.002); qc(-.004, 1, -.006, .985); l(0, .335); bc(.05, .31, .096, .25, .098, .17); qc(.102, .1, .075, .06); qc(.07, .046, .1, .038); l(.26, 0); c.closePath(); };
+    const neck = (c) => { c.beginPath(); c.moveTo(...q(.26, 0)); c.quadraticCurveTo(...q(.5, .1), ...q(.74, 0)); };
+    const holes = (c) => { c.beginPath(); c.moveTo(...q(.925, .06)); c.quadraticCurveTo(...q(.898, .1), ...q(.902, .17)); c.bezierCurveTo(...q(.904, .25), ...q(.95, .31), ...q(1, .335)); c.moveTo(...q(.075, .06)); c.quadraticCurveTo(...q(.102, .1), ...q(.098, .17)); c.bezierCurveTo(...q(.096, .25), ...q(.05, .31), ...q(0, .335)); };
+    const hem = (c) => { c.beginPath(); c.moveTo(...q(1.006, .985)); c.quadraticCurveTo(...q(1.004, 1), ...q(.96, 1.002)); c.quadraticCurveTo(...q(.5, 1.014), ...q(.04, 1.002)); c.quadraticCurveTo(...q(-.004, 1), ...q(-.006, .985)); };
+    const arms = (c) => { c.beginPath(); c.moveTo(101, 70); c.quadraticCurveTo(118, 50, 150, 44); c.quadraticCurveTo(182, 50, 199, 70); };
     const hangerStroke = (c, col, path, w) => { c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#07090b'; c.lineWidth = w + 2.4; path(c); c.stroke(); c.strokeStyle = col; c.lineWidth = w; path(c); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = 1.2; c.save(); c.translate(0, -w * .22); path(c); c.stroke(); c.restore(); };
-    let tex = null;                                               // street map artwork, loaded before the jerseys are painted
-    function paint(name, num, hanger) {                            // the back of one jersey on its hanger, painted once
+    // The two sides of the reversible jersey. The street map is the full panel template, so it fills the
+    // whole back edge to edge, star and all. Lettering measured off the render as shares of the jersey:
+    // crest 11% down, name centred 20% down with caps 5% of the height, number centred 42% down and 23% tall.
+    const tex = {}, KIT = {
+      dark:  { base: '#1d252d', edge: 0,   nEdge: 1.7, trim: null },
+      white: { base: '#ffffff', edge: 1.3, nEdge: 2.6, trim: '#1d252d' } };
+    let crest = null;
+    function paint(name, num, hanger, kit) {                       // the back of one jersey on its hanger, painted once
+      const k = KIT[kit] || KIT.dark;
       const o = document.createElement('canvas'); o.width = LW * S; o.height = AH * S;
       const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
-      // inside of the front panel seen through the neck, then the hanger resting inside the shoulders
-      c.beginPath(); c.moveTo(96, 64.5); c.lineTo(122, 51); c.quadraticCurveTo(150, 118, 178, 51); c.lineTo(204, 64.5); c.lineTo(204, 126); c.lineTo(96, 126); c.closePath(); c.fillStyle = '#0d1014'; c.fill();
-      hangerStroke(c, hanger, arms, 6);
-      // fabric with the street map
-      body(c); c.fillStyle = DARK; c.fill();
+      hangerStroke(c, hanger, arms, 6);                            // the hanger sits inside, showing through the back neck
+      // fabric: the template scaled to the jersey's height, centred
+      body(c); c.fillStyle = k.base; c.fill();
       c.save(); body(c); c.clip();
-      if (tex) c.drawImage(tex, 39, 50, 222, 262);                // the real street map from the jersey artwork
-      else { c.strokeStyle = '#59606b'; c.lineWidth = 2; for (let i = -300; i < 600; i += 16) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i + 110, 340); c.moveTo(0, i); c.lineTo(300, i - 90); c.stroke(); } }
+      const t = tex[kit]; if (t) { const h = JH * 1.02, w = h * t.width / t.height; c.drawImage(t, 150 - w / 2, JY - JH * .01, w, h); }
+      // a little roundness: the sides turn away from the light
+      const g = c.createLinearGradient(JX, 0, JX + JW, 0);
+      g.addColorStop(0, 'rgba(0,0,0,.30)'); g.addColorStop(.14, 'rgba(0,0,0,.06)'); g.addColorStop(.42, 'rgba(255,255,255,.05)'); g.addColorStop(.7, 'rgba(0,0,0,0)'); g.addColorStop(.88, 'rgba(0,0,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,.32)');
+      c.fillStyle = g; c.fillRect(JX - 2, JY, JW + 4, JH + 6);
       c.restore();
-      // sides: a slim black panel down each side, split from the map by one yellow stripe
-      c.save(); body(c); c.clip(); c.fillStyle = '#0a0c0f';
-      c.beginPath(); c.moveTo(40, 122); c.lineTo(72, 122); c.lineTo(68, 322); c.lineTo(40, 322); c.closePath(); c.fill();
-      c.beginPath(); c.moveTo(260, 122); c.lineTo(228, 122); c.lineTo(232, 322); c.lineTo(260, 322); c.closePath(); c.fill();
-      c.strokeStyle = GOLD; c.lineWidth = 3; c.lineCap = 'butt';
-      c.beginPath(); c.moveTo(72, 122); c.lineTo(68, 322); c.moveTo(228, 122); c.lineTo(232, 322); c.stroke();
-      c.restore(); c.lineCap = 'round';
-      // thin black binding on the neck, shoulders and arm holes
-      c.strokeStyle = '#0a0c0f'; c.lineWidth = 3;
-      c.beginPath(); c.moveTo(96.5, 65); c.lineTo(122, 52); c.quadraticCurveTo(150, 81, 178, 52); c.lineTo(203.5, 65); c.stroke();
-      c.beginPath(); c.moveTo(97, 65); c.bezierCurveTo(97, 104, 69, 116, 63, 140); c.moveTo(203, 65); c.bezierCurveTo(203, 104, 231, 116, 237, 140); c.stroke();
-      // Lettering sizes measured off the Brar artwork, as a share of the jersey width (184 here):
-      // number 33% tall with a 1.2% outline, name 12% tall with a 1% outline, centres 35% apart.
-      const word = (txt, y, size, maxW, edge) => {
-        c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; let w = c.measureText(txt).width;
-        if (w > maxW) { edge *= maxW / w; size *= maxW / w; c.font = `900 ${size}px Montserrat, "Arial Black", Arial, sans-serif`; }
-        c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.strokeStyle = TEAL; c.lineWidth = edge * 2; c.strokeText(txt, 150, y); c.fillStyle = GOLD; c.fillText(txt, 150, y);
+      // edges: the white side shows the navy reverse at the neck, arm holes and hem, the black side just a faint rim
+      if (k.trim) { c.strokeStyle = k.trim; c.lineWidth = 2; neck(c); c.stroke(); holes(c); c.stroke(); hem(c); c.stroke(); }
+      else { c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 1; body(c); c.stroke(); }
+      if (crest) { const r = JW * .075; c.drawImage(crest, 150 - r / 2, JY + JH * .11 - r / 2, r, r); }
+      const word = (txt, cy, cap, maxW, font, ratio, edge, wt) => {   // centre a line of lettering on its cap height
+        let size = cap / ratio; c.font = `${wt} ${size}px ${font}`; const w = c.measureText(txt).width;
+        if (w > maxW) { edge *= maxW / w; size *= maxW / w; c.font = `${wt} ${size}px ${font}`; }
+        const base = cy + size * ratio / 2;
+        c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+        if (edge) { c.strokeStyle = TEAL; c.lineWidth = edge * 2; c.strokeText(txt, 150, base); }
+        c.fillStyle = GOLD; c.fillText(txt, 150, base);
       };
-      if (name) word(name, 139, 31.5, 146, 1.9);
-      word(String(num), 222.5, 87, 140, 2.3);
-      star(c, 205, 293, 11, TEAL); star(c, 205, 293, 6.5, GOLD);
+      if (name) word(name, JY + JH * .198, JH * .052, JW * .7, '"Barlow Condensed", "Arial Narrow", sans-serif', .7, k.edge, 700);
+      word(String(num), JY + JH * .42, JH * .232, JW * .8, 'Montserrat, Arial, sans-serif', .7, k.nEdge, 600);
       return o;
     }
+    window.skJersey = (n, num, kit) => paint(n, num, TEAL, kit);  // handy for checking the artwork on its own
     // Every jersey gets its own wind: its own strength, rhythm and the side it mostly blows from
     const rnd = (i, n) => { const v = Math.sin((i + 1) * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
     const items = cvs.map((cv, n) => { const i = +cv.dataset.i || n; return { cv, i, ctx: cv.getContext('2d'), art: null, on: false, band: rnd(i, 9) * 400, lt: 0,
@@ -989,10 +997,10 @@
       if (live.length && !reduce) raf = requestAnimationFrame(loop);
     }
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
-    const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num, it.hanger); }); kick(); };
-    const font = document.fonts && document.fonts.load ? document.fonts.load('900 40px Montserrat').catch(() => {}) : Promise.resolve();
-    const map = new Promise((res) => { const im = new Image(); im.onload = () => { tex = im; res(); }; im.onerror = res; im.src = 'jersey-map.png'; });
-    Promise.all([font, map]).then(start);
+    const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num, it.hanger, it.i % 2 ? 'white' : 'dark'); }); kick(); };
+    const font = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 40px Montserrat'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(() => {}) : Promise.resolve();
+    const load = (src, put) => new Promise((res) => { const im = new Image(); im.onload = () => { put(im); res(); }; im.onerror = res; im.src = src; });
+    Promise.all([font, load('jersey-map-dark.jpg', (im) => (tex.dark = im)), load('jersey-map-white.jpg', (im) => (tex.white = im)), load('logo-mark.png', (im) => (crest = im))]).then(start);
     items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; if (!it.on) it.lt = 0; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
     addEventListener('resize', () => { items.forEach((it) => { if (size(it) && it.art) frame(it, performance.now() / 1000); }); kick(); });
   })();
