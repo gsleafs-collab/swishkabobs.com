@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: "Montserrat"; font-weight: 900; src: url("montserrat-900.woff2") format("woff2"); font-display: swap; }
-  @font-face { font-family: "Montserrat"; font-weight: 600; src: url("montserrat-600.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Liebling"; font-weight: 700; src: url("liebling-digits.woff2") format("woff2"); font-display: swap; unicode-range: U+0030-0039; }   /* jersey numbers, digits only */
   @font-face { font-family: "Yellowtail"; src: url("yellowtail.woff2") format("woff2"); font-display: swap; }
   :root {
     --ink: #101316;
@@ -1019,7 +1019,7 @@
         c.fillStyle = GOLD; c.fillText(txt, 150, base);
       };
       if (name) word(name, JY + JH * .198, JH * .052, JW * .7, '"Barlow Condensed", "Arial Narrow", sans-serif', .7, k.edge, 700);
-      word(String(num), JY + JH * .42, JH * .232, JW * .8, 'Montserrat, Arial, sans-serif', .7, k.nEdge, 600);
+      word(String(num), JY + JH * .42, JH * .232, JW * .8, 'Liebling, Montserrat, Arial, sans-serif', .69, k.nEdge, 700);
       return o;
     }
     window.skJersey = (n, num, kit) => paint(n, num, TEAL, kit);  // handy for checking the artwork on its own
@@ -1083,7 +1083,7 @@
     }
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     const start = () => { items.forEach((it) => { size(it); it.art = paint(it.cv.dataset.name, it.cv.dataset.num, it.hanger, it.i % 2 ? 'white' : 'dark'); }); kick(); };
-    const font = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 40px Montserrat'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(() => {}) : Promise.resolve();
+    const font = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('700 40px Liebling'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(() => {}) : Promise.resolve();
     const load = (src, put) => new Promise((res) => { const im = new Image(); im.onload = () => { put(im); res(); }; im.onerror = res; im.src = src; });
     Promise.all([font, load('jersey-map-dark.jpg', (im) => (tex.dark = im)), load('jersey-map-white.jpg', (im) => (tex.white = im)), load('logo-mark.png', (im) => (crest = im))]).then(start);
     items.forEach((it) => new IntersectionObserver((es) => { it.on = es[0].isIntersecting; if (!it.on) it.lt = 0; kick(); }, { rootMargin: '80px' }).observe(it.cv));   // only animate jerseys on screen
