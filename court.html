@@ -976,7 +976,7 @@
   /* ----- Jerseys on the skewer, blowing in the wind ----- */
   (() => {
     const cvs = [...document.querySelectorAll('canvas.jz')]; if (!cvs.length) return;
-    const LW = 300, LH = 340, AH = 330, S = 3;                     // card drawing size, jersey artwork height, artwork detail
+    const LW = 300, LH = 340, AH = 345, S = 3;                     // card drawing size, jersey artwork height, artwork detail
     const GOLD = '#f1b434', TEAL = '#006269', DARK = '#1d252d', PX = 150, PY = 20;   // PX, PY: where the hook sits on the skewer
     // Jersey back, traced off the official render: a tall, narrow tank (width is 51% of the height),
     // shallow back neck, short shoulder straps and arm holes that open a third of the way down.
@@ -999,6 +999,8 @@
       const k = KIT[kit] || KIT.dark;
       const o = document.createElement('canvas'); o.width = LW * S; o.height = AH * S;
       const c = o.getContext('2d'); c.scale(S, S); c.lineJoin = c.lineCap = 'round';
+      // a warm gold light behind the jersey, just spilling round its edges
+      c.save(); c.shadowColor = 'rgba(241,180,52,.42)'; c.shadowBlur = 26; body(c); c.fillStyle = k.base; c.fill(); c.shadowColor = 'rgba(255,214,120,.25)'; c.shadowBlur = 10; c.fill(); c.restore();
       hangerStroke(c, hanger, arms, 6);                            // the hanger sits inside, showing through the back neck
       // fabric: the template scaled to the jersey's height, centred
       body(c); c.fillStyle = k.base; c.fill();
@@ -1009,9 +1011,7 @@
       g.addColorStop(0, 'rgba(0,0,0,.30)'); g.addColorStop(.14, 'rgba(0,0,0,.06)'); g.addColorStop(.42, 'rgba(255,255,255,.05)'); g.addColorStop(.7, 'rgba(0,0,0,0)'); g.addColorStop(.88, 'rgba(0,0,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,.32)');
       c.fillStyle = g; c.fillRect(JX - 2, JY, JW + 4, JH + 6);
       c.restore();
-            // gold trim all the way round, in the site's gold, with a soft glow
-      c.save(); c.strokeStyle = GOLD; c.shadowColor = 'rgba(241,180,52,.8)'; c.shadowBlur = 9; c.lineWidth = 2.2; body(c); c.stroke(); c.shadowBlur = 0; c.lineWidth = 1.6; body(c); c.stroke(); c.restore();
-      if (crest) { const r = JW * .075; c.drawImage(crest, 150 - r / 2, JY + JH * .11 - r / 2, r, r); }
+            if (crest) { const r = JW * .075; c.drawImage(crest, 150 - r / 2, JY + JH * .11 - r / 2, r, r); }
       const word = (txt, cy, cap, maxW, font, ratio, edge, wt) => {   // centre a line of lettering on its cap height
         let size = cap / ratio; c.font = `${wt} ${size}px ${font}`; const w = c.measureText(txt).width;
         if (w > maxW) { edge *= maxW / w; size *= maxW / w; c.font = `${wt} ${size}px ${font}`; }
