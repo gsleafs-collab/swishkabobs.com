@@ -633,6 +633,30 @@
     .ticker div { animation: none; }
     .head h2 i, .rv { opacity: 1; transform: none; }
   }
+
+  /* ---------- Easter egg: hold down Eric Lee's jersey ---------- */
+  .card.egg-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .card.egg-card.charging canvas.jz { animation: eggShake .09s linear infinite; }
+  @keyframes eggShake { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-1.5px, 1px) rotate(-1deg); } 75% { transform: translate(1.5px, -1px) rotate(1deg); } }
+  .egg { position: fixed; z-index: 300; width: min(380px, 92vw); margin-left: calc(min(380px, 92vw) / -2); pointer-events: auto; cursor: pointer; text-align: center; animation: eggOut .35s 3.3s ease-in forwards; }
+  .egg-gun { position: relative; width: 100%; filter: drop-shadow(0 14px 18px rgba(0,0,0,.6)); transform-origin: 50% 80%; animation: eggPop .5s cubic-bezier(.2,1.6,.4,1) both, eggKick .5s .55s ease-out; }
+  .egg-gun svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .egg-pump { animation: eggPump .42s .55s cubic-bezier(.5,0,.3,1) both; }
+  .egg-shell { opacity: 0; transform-box: fill-box; transform-origin: center; animation: eggShell .8s .66s cubic-bezier(.2,.6,.5,1) both; }
+  .egg-chk { position: absolute; left: 50%; top: -6%; font-family: var(--display); font-size: clamp(22px, 6vw, 30px); letter-spacing: .04em; color: #fff; -webkit-text-stroke: 1.5px #14181d; paint-order: stroke fill; opacity: 0; transform: rotate(-8deg); animation: eggChk .7s .6s ease-out both; }
+  .egg-say { display: flex; justify-content: center; align-items: baseline; gap: .25em; margin-top: 4px; }
+  .egg-say span { display: inline-block; opacity: 0; animation: eggWord .45s cubic-bezier(.2,1.7,.4,1) both; }
+  .egg-say .w1, .egg-say .w3 { font-family: var(--display); text-transform: uppercase; font-size: clamp(44px, 13vw, 64px); line-height: 1; color: var(--gold); -webkit-text-stroke: 3px var(--teal); paint-order: stroke fill; text-shadow: 0 5px 0 rgba(0,0,0,.45); }
+  .egg-say .w2 { font-family: var(--script); font-size: clamp(30px, 8.5vw, 42px); color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.5); transform: rotate(-6deg); }
+  .egg-say .w1 { animation-delay: 1.2s; } .egg-say .w2 { animation-delay: 1.55s; } .egg-say .w3 { animation-delay: 1.9s; }
+  @keyframes eggPop { from { opacity: 0; transform: translateY(60px) scale(.15) rotate(-35deg); } to { opacity: 1; transform: none; } }
+  @keyframes eggKick { 30% { transform: rotate(-4deg) translateX(-6px); } }
+  @keyframes eggPump { 0% { transform: translateX(0); } 45% { transform: translateX(-34px); } 60% { transform: translateX(-34px); } 100% { transform: translateX(0); } }
+  @keyframes eggShell { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(70px, -10px) rotate(540deg); } 40% { opacity: 1; transform: translate(30px, -70px) rotate(240deg); } }
+  @keyframes eggChk { 0% { opacity: 0; transform: translate(-50%, 10px) rotate(-8deg) scale(.5); } 25% { opacity: 1; transform: translate(-50%, 0) rotate(-8deg) scale(1.1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -14px) rotate(-8deg) scale(1); } }
+  @keyframes eggWord { from { opacity: 0; transform: translateY(24px) scale(.3); } to { opacity: 1; } }
+  .egg-say .w2 { animation-name: eggWord2; } @keyframes eggWord2 { from { opacity: 0; transform: translateY(24px) scale(.3) rotate(-6deg); } to { opacity: 1; transform: rotate(-6deg); } }
+  @keyframes eggOut { to { opacity: 0; transform: scale(.9) translateY(20px); } }
 </style>
 </head>
 <body>
@@ -884,6 +908,70 @@
     });
     c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.classList.remove('shut'); c.classList.toggle('flip'); } });
   });
+
+  /* ----- Easter egg: hold down Eric Lee's jersey ----- */
+  (() => {
+    const eric = P.find((p) => /^eric lee$/i.test((p.name || '').trim())); if (!eric) return;
+    const card = document.querySelector(`.card[data-n="${eric.num}"]`); if (!card) return;
+    card.classList.add('egg-card');
+    const GUN = `<svg viewBox="0 0 300 92" aria-hidden="true">
+      <defs><linearGradient id="egW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07338"/><stop offset=".55" stop-color="#8a5526"/><stop offset="1" stop-color="#5e3815"/></linearGradient>
+      <linearGradient id="egM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b7682"/><stop offset=".4" stop-color="#3a434d"/><stop offset="1" stop-color="#1d232a"/></linearGradient></defs>
+      <path d="M4 42 L74 33 L98 37 L98 53 L76 58 L14 76 Q4 78 4 70 Z" fill="url(#egW)" stroke="#2a1606" stroke-width="2"/>
+      <path d="M8 46 L70 38 M10 60 L68 47" stroke="#6b3f17" stroke-width="1.2" opacity=".6"/>
+      <rect x="2" y="42" width="7" height="34" rx="3" fill="#1d232a"/>
+      <path d="M112 52 Q112 66 124 66 L132 66 Q134 60 130 56" fill="none" stroke="#1d232a" stroke-width="3.5"/>
+      <path d="M121 52 L118 61" stroke="#1d232a" stroke-width="3" stroke-linecap="round"/>
+      <rect x="94" y="29" width="58" height="25" rx="5" fill="url(#egM)" stroke="#0e1114" stroke-width="2"/>
+      <rect x="114" y="33" width="22" height="7" rx="2" fill="#0e1114"/>
+      <circle cx="102" cy="45" r="2" fill="#8b96a2"/><circle cx="144" cy="45" r="2" fill="#8b96a2"/>
+      <rect x="150" y="30" width="144" height="9" rx="3" fill="url(#egM)" stroke="#0e1114" stroke-width="2"/>
+      <rect x="150" y="41" width="112" height="8" rx="3" fill="#2b333c" stroke="#0e1114" stroke-width="2"/>
+      <rect x="258" y="39.5" width="9" height="11" rx="2" fill="#1d232a"/>
+      <circle cx="289" cy="28.5" r="2.4" fill="#f1b434"/>
+      <g class="egg-shell"><rect x="118" y="32" width="16" height="7" rx="1.5" fill="#d23b2a"/><rect x="114" y="32" width="5" height="7" rx="1" fill="#f1b434"/></g>
+      <g class="egg-pump"><rect x="172" y="37" width="58" height="17" rx="6" fill="url(#egW)" stroke="#2a1606" stroke-width="2"/>
+        <path d="M181 39v13M189 39v13M197 39v13M205 39v13M213 39v13M221 39v13" stroke="#5e3815" stroke-width="2" stroke-linecap="round"/></g>
+    </svg>`;
+    let ac = null;
+    const chk = (at, f) => {                                      // a short metallic "chk" made from a burst of noise
+      try {
+        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+        const n = ac.createBuffer(1, ac.sampleRate * .07, ac.sampleRate), d = n.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+        const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = n; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 3; g.gain.value = .5;
+        src.connect(bp).connect(g).connect(ac.destination); src.start(ac.currentTime + at);
+      } catch (e) {}
+    };
+    let open = null;
+    function fire() {
+      if (open) return;
+      const r = card.getBoundingClientRect(), el = document.createElement('div');
+      el.className = 'egg'; el.setAttribute('role', 'img'); el.setAttribute('aria-label', 'Cock please cock');
+      const half = Math.min(380, innerWidth * .92) / 2;                // keep the whole thing on screen
+      el.style.left = Math.min(innerWidth - half - 6, Math.max(half + 6, r.left + r.width / 2)) + 'px';
+      el.style.top = Math.max(70, Math.min(innerHeight - 260, r.top + r.height * .15)) + 'px';
+      el.innerHTML = `<div class="egg-gun">${GUN}<b class="egg-chk">CHK-CHK!</b></div><div class="egg-say"><span class="w1">Cock</span><span class="w2">please</span><span class="w3">cock</span></div>`;
+      document.body.appendChild(el); open = el;
+      chk(.6, 2200); chk(.88, 3200);
+      if (navigator.vibrate) navigator.vibrate([25, 260, 25]);
+      const done = () => { clearTimeout(t); el.remove(); open = null; };
+      const t = setTimeout(done, 3700); el.addEventListener('click', done);
+    }
+    // a long press: hold for about two thirds of a second without moving
+    let timer = 0, warm = 0, x0 = 0, y0 = 0, fired = false;
+    const stop = () => { clearTimeout(timer); clearTimeout(warm); card.classList.remove('charging'); };
+    card.addEventListener('pointerdown', (e) => {
+      if (e.button) return; fired = false; x0 = e.clientX; y0 = e.clientY;
+      warm = setTimeout(() => card.classList.add('charging'), 250);
+      timer = setTimeout(() => { stop(); fired = true; fire(); }, 700);
+    });
+    card.addEventListener('pointermove', (e) => { if (Math.hypot(e.clientX - x0, e.clientY - y0) > 10) stop(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => card.addEventListener(ev, stop));
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
+    card.addEventListener('click', (e) => { if (fired) { fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // the hold doesn't also flip the card
+  })();
 
   /* ----- Jerseys on the skewer, blowing in the wind ----- */
   (() => {
