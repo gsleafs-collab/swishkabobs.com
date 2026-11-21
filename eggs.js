@@ -146,8 +146,9 @@
       ${say([["I'm a", 's', .75], ['MF', 'w', 1.05], ['Gabru', 'w', 1.35]])}`,
       sound: () => { thud(.42, .45); [1.05, 1.3, 1.45, 1.7].forEach((t, i) => thud(t, i === 3 ? .4 : .28)); buzz([30, 600, 30, 200, 30]); } },
 
-    /* Gurjot: a ball from the far corner of the screen, nothing but net */
-    'gurjot mann': { dur: 3800, html: () => `
+    /* Gurjot: from the far corner of the screen, nothing but net, and it rains money */
+    'gurjot mann': { dur: 6200, html: () => `
+      <div class="eg-dim"></div>
       <div class="eg-hoop"><svg viewBox="0 0 120 110">
         <rect x="14" y="2" width="92" height="62" rx="4" fill="rgba(255,255,255,.92)" stroke="#14181d" stroke-width="3"/>
         <rect x="42" y="26" width="36" height="28" fill="none" stroke="#ff671f" stroke-width="3"/>
@@ -155,8 +156,16 @@
         <ellipse cx="60" cy="66" rx="28" ry="5" fill="none" stroke="#ff671f" stroke-width="4.5"/>
       </svg></div>
       <div class="eg-shot"><div class="eg-shot-y">${BALL('eg-ball spin')}</div></div>
-      ${say([['From', 'w', 1.35], ['downtown', 'w', 1.6]])}`,
-      sound: () => { noise(1.18, .45, 2400, .6, .3, 'highpass', 6000); tone(1.2, .5, 900, 600, 'triangle', .05); buzz([30, 1100, 60]); } },
+      <i class="eg-flash"></i><b class="eg-plus3">+3</b>
+      ${Array.from({ length: 44 }, (_, k) => { const R = Math.random;
+        return `<i class="eg-bill" style="--x:${(R() * 100).toFixed(1)}vw;--d:${(1.25 + R() * 2.6).toFixed(2)}s;--t:${(2.2 + R() * 1.4).toFixed(2)}s;--r:${(R() * 360).toFixed(0)}deg;--sw:${(18 + R() * 40).toFixed(0)}px;--z:${(.7 + R() * .6).toFixed(2)}"><i><svg viewBox="0 0 64 30"><rect x="1" y="1" width="62" height="28" rx="2" fill="#7fb35a" stroke="#2f5a1c" stroke-width="2"/><rect x="5" y="5" width="54" height="20" rx="1" fill="none" stroke="#c9e6b0" stroke-width="1.2"/><ellipse cx="32" cy="15" rx="9" ry="8" fill="#a8d38a" stroke="#2f5a1c" stroke-width="1.2"/><text x="32" y="19.5" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="12" fill="#2f5a1c">$</text><text x="9" y="13" font-family="Anton, Impact, sans-serif" font-size="7" fill="#2f5a1c">17</text><text x="49" y="25" font-family="Anton, Impact, sans-serif" font-size="7" fill="#2f5a1c">17</text></svg></i></i>`; }).join('')}
+      ${say([['Bang!', 'w bang', 1.3]])}
+      <b class="eg-cash">Cash money</b>`,
+      sound: () => { noise(1.18, .45, 2400, .6, .3, 'highpass', 6000); tone(1.2, .5, 900, 600, 'triangle', .05);
+        noise(1.25, 2.6, 900, .5, .12, 'bandpass', 1500);                                   // the crowd
+        ding(1.55, 2093, .14); ding(1.68, 2637, .14); noise(1.5, .08, 3000, 3, .25);         // cha-ching
+        [1.9, 2.2, 2.5, 2.9, 3.3].forEach((t) => noise(t, .05, 5000, 2, .06));               // bills fluttering
+        buzz([30, 1100, 80, 80, 80, 80, 160]); } },
 
     /* Jack: a hard hat lands on the hanger with a clunk */
     'jack healy': { dur: 3600, html: () => `
@@ -277,6 +286,7 @@
   .eg-say .w { font-family: var(--display); text-transform: uppercase; font-size: clamp(32px, 9vw, 56px); line-height: 1; color: var(--gold); -webkit-text-stroke: 3px var(--teal); paint-order: stroke fill; text-shadow: 0 5px 0 rgba(0,0,0,.45); }
   .eg-say .w.gr { color: #48e27a; -webkit-text-stroke-color: #0b3d1c; }
   .eg-say .s { font-family: var(--script); font-size: clamp(26px, 7.5vw, 38px); color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.5); transform: rotate(-6deg); animation-name: egWordS; }
+  .eg-say .w.bang { font-size: clamp(56px, 17vw, 88px); }
   .eg-say .s.big { font-size: clamp(44px, 13vw, 64px); }
   @keyframes egWord { from { opacity: 0; transform: translateY(24px) scale(.3); } to { opacity: 1; transform: none; } }
   @keyframes egWordS { from { opacity: 0; transform: translateY(24px) scale(.3) rotate(-6deg); } to { opacity: 1; transform: rotate(-6deg); } }
@@ -284,6 +294,19 @@
   @keyframes egRot { to { transform: rotate(360deg); } }
   @keyframes egPop { from { opacity: 0; transform: translateY(40px) scale(.2); } to { opacity: 1; transform: none; } }
   @keyframes egDrop { 0% { opacity: 1; transform: translateY(calc(-1 * var(--vh))); } 60% { transform: translateY(0) scaleY(.82) scaleX(1.1); } 75% { transform: translateY(-14px); } 88% { transform: translateY(0) scaleY(.95); } 100% { opacity: 1; transform: none; } }
+
+  /* gurjot: the screen rains money */
+  .eg-dim { inset: 0; background: radial-gradient(ellipse at 50% 40%, rgba(6,8,10,.35), rgba(6,8,10,.7)); opacity: 0; animation: egDim 6.2s ease both; }
+  @keyframes egDim { 18% { opacity: 0; } 26%, 86% { opacity: 1; } 100% { opacity: 0; } }
+  .eg-flash { inset: 0; background: radial-gradient(circle at var(--cx) calc(var(--ct) + var(--s) * 80px), rgba(255,226,150,.85), rgba(241,180,52,0) 55%); opacity: 0; animation: egFlash .7s ease-out both 1.15s; }
+  @keyframes egFlash { 15% { opacity: 1; } 100% { opacity: 0; } }
+  .eg-plus3 { left: var(--cx); top: calc(var(--ct) + var(--s) * 70px); translate: -50% 0; font-family: var(--display); font-weight: 400; font-size: calc(var(--s) * 46px); color: #fff; -webkit-text-stroke: 2px var(--teal); paint-order: stroke fill; opacity: 0; animation: egPlus 1.2s ease-out both 1.2s; }
+  @keyframes egPlus { 0% { opacity: 0; transform: scale(.4); } 20% { opacity: 1; transform: scale(1.15); } 100% { opacity: 0; transform: translateY(calc(var(--s) * -90px)); } }
+  .eg-bill { left: var(--x); top: -50px; width: calc(46px * var(--z)); animation: egFall var(--t) linear both; animation-delay: var(--d); }
+  .eg-bill > i { display: block; transform: rotate(var(--r)); animation: egFlutter .9s ease-in-out infinite alternate; }
+  @keyframes egFall { from { transform: translateY(0); } to { transform: translateY(calc(var(--vh) + 100px)); } }
+  @keyframes egFlutter { from { transform: translateX(calc(var(--sw) * -1)) rotate(var(--r)) rotateX(0deg); } to { transform: translateX(var(--sw)) rotate(calc(var(--r) + 50deg)) rotateX(60deg); } }
+  .eg-cash { left: var(--tx); top: calc(var(--ct) + var(--cw) * .98 + clamp(58px, 17.5vw, 92px)); translate: -50% 0; font-family: var(--script); font-weight: 400; font-size: clamp(30px, 8.5vw, 44px); color: #9be07a; text-shadow: 0 3px 0 rgba(0,0,0,.6); white-space: nowrap; opacity: 0; transform: rotate(-6deg); animation: egWordS .5s cubic-bezier(.2,1.7,.4,1) both 2.1s; }
 
   /* jules */
   .eg-moto { width: calc(var(--s) * 210px); left: calc(var(--cx) - var(--s) * 105px); top: calc(var(--jc) - var(--s) * 50px); transform-origin: 22% 75%; animation: egMoto 3.6s cubic-bezier(.45,0,.4,1) both; }
