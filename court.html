@@ -258,13 +258,15 @@
   .leader::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--teal-hot), var(--gold)); }
   .leader strong { display: block; font-family: var(--display); font-weight: 400; font-size: 54px; line-height: 1; color: var(--cream); font-variant-numeric: tabular-nums; }
   .leader span { font-family: var(--cond); font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: .03em; }
-  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); }
+  .tablewrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 600px; }
   th, td { padding: 11px 12px; text-align: right; white-space: nowrap; }
   th { font-family: var(--cond); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; color: var(--mute); border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; }
   th:hover, th.sorted { color: var(--gold); }
   th.sorted::after { content: " ▾"; }
-  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--ink-2); }
+  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; z-index: 3; background: var(--ink-2); }
+  .tablewrap.scrolled th:first-child, .tablewrap.scrolled td:first-child { box-shadow: 8px 0 10px -6px rgba(0,0,0,.7); }   /* a shadow edge once the columns slide under the names */
+  td .nm-s { display: none; }
   td { border-bottom: 1px solid rgba(255,255,255,.06); font-size: 15px; }
   tr:last-child td { border-bottom: 0; }
   tbody tr { transition: background .15s; }
@@ -275,6 +277,14 @@
   td.bar s { position: absolute; left: 8px; right: 52px; top: 50%; height: 8px; translate: 0 -50%; background: var(--ink); border-radius: 4px; overflow: hidden; }
   td.bar s u { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--orange), var(--gold)); border-radius: 4px; transition: width 1.1s cubic-bezier(.2,.9,.3,1); }
   .in td.bar s u { width: var(--w); }
+  td.bar s { z-index: 0; }
+  @media (max-width: 640px) {
+    table { min-width: 0; }
+    th, td { padding: 10px 9px; } td { font-size: 14px; } th { font-size: 12px; letter-spacing: .08em; }
+    td .n { width: 28px; height: 22px; font-size: 13px; margin-right: 7px; }
+    td .nm { font-size: 15px; } td .nm-f { display: none; } td .nm-s { display: inline; }
+    td.bar { min-width: 84px; } td.bar s { left: 6px; right: 40px; height: 6px; }
+  }
   .fine { color: var(--mute); font-size: 13px; margin: 12px 2px 0; }
 
   /* ---------- Roster ---------- */
@@ -847,13 +857,15 @@
   }).join('');
 
   /* ----- Stats ----- */
-  const P = D.players.map((p) => ({ ...p, ppg: per(p.pts, p.gp), rpg: per(p.reb, p.gp), apg: per(p.ast, p.gp) }));
-  const top = (k) => P.slice().sort((a, b) => b[k] - a[k])[0];
+  const P = D.players.map((p) => ({ ...p, ppg: per(p.pts, p.gp), rpg: per(p.reb, p.gp), apg: per(p.ast, p.gp), tpg: per(p.tpm, p.gp) }));
+  // leaders are all per game, among players who've been in at least half the filmed games
+  const minGp = Math.max(1, Math.ceil(Math.max(...P.map((p) => p.gp)) / 2));
+  const top = (k) => P.filter((p) => p.gp >= minGp).sort((a, b) => b[k] - a[k])[0];
   const lead = [
     { k: 'ppg', label: 'Points per game', dp: 1 },
-    { k: 'reb', label: 'Rebounds', dp: 0 },
-    { k: 'ast', label: 'Assists', dp: 0 },
-    { k: 'tpm', label: 'Threes made', dp: 0 }
+    { k: 'rpg', label: 'Rebounds per game', dp: 1 },
+    { k: 'apg', label: 'Assists per game', dp: 1 },
+    { k: 'tpg', label: 'Threes per game', dp: 1 }
   ];
   $('leaders').innerHTML = lead.map((l, i) => { const p = top(l.k); return `<div class="leader rv" style="--d:${i}"><div class="big">${p.num}</div><small>${l.label}</small><strong data-count="${p[l.k].toFixed(l.dp)}" data-dp="${l.dp}">0</strong><span>#${p.num} ${esc(p.name || '')}</span></div>`; }).join('');
 
@@ -861,18 +873,22 @@
     { k: 'num', t: 'Player' }, { k: 'gp', t: 'GP' }, { k: 'ppg', t: 'PPG' }, { k: 'pts', t: 'PTS' },
     { k: 'reb', t: 'REB' }, { k: 'ast', t: 'AST' }, { k: 'tpm', t: '3P' }, { k: 'fgm', t: 'FG' }
   ];
+  const lastNm = (p) => { const ln = (p.name || '').trim().split(/\s+/).pop(), same = P.filter((q) => (q.name || '').trim().split(/\s+/).pop() === ln).length > 1;
+    return same ? p.name.trim()[0] + '. ' + ln : ln; };   // short names on phones: H. Singh and K. Singh stay apart
   let sortKey = 'ppg';
   const maxPpg = Math.max(...P.map((p) => p.ppg)) || 1;
   function drawTable() {
     const rows = P.slice().sort((a, b) => (sortKey === 'num' ? a.num - b.num : b[sortKey] - a[sortKey]));
     $('table').tHead.innerHTML = '<tr>' + cols.map((c) => `<th data-k="${c.k}" class="${c.k === sortKey ? 'sorted' : ''}">${c.t}</th>`).join('') + '</tr>';
     $('table').tBodies[0].innerHTML = rows.map((p) => `<tr>
-      <td><span class="n">${p.num}</span><span class="nm">${esc(pname(p))}</span></td>
+      <td><span class="n">${p.num}</span><span class="nm nm-f">${esc(pname(p))}</span><span class="nm nm-s">${esc(lastNm(p))}</span></td>
       <td>${p.gp}</td>
       <td class="bar"><s><u style="--w:${(p.ppg / maxPpg * 100).toFixed(0)}%"></u></s>${p.ppg.toFixed(1)}</td>
       <td>${p.pts}</td><td>${p.reb}</td><td>${p.ast}</td><td>${p.tpm}-${p.tpa}</td><td>${p.fgm}-${p.fga}</td></tr>`).join('');
   }
   drawTable();
+  // shadow on the name column once the table has been swiped sideways, on every stats table
+  document.addEventListener('scroll', (e) => { const w = e.target; if (w.classList && w.classList.contains('tablewrap')) w.classList.toggle('scrolled', w.scrollLeft > 4); }, true);
   $('table').tHead.addEventListener('click', (e) => { const th = e.target.closest('th'); if (th) { sortKey = th.dataset.k; drawTable(); } });
   $('statsNote').innerHTML = `Player numbers cover the ${Math.max(...P.map((p) => p.gp))} filmed games, tracked by jersey number. Source: <a href="${T.tcbl}" target="_blank" rel="noopener">tcbl.ca</a>.`;
 
@@ -1018,7 +1034,7 @@
         if (edge) { c.strokeStyle = TEAL; c.lineWidth = edge * 2; c.strokeText(txt, 150, base); }
         c.fillStyle = GOLD; c.fillText(txt, 150, base);
       };
-      if (name) word(name, JY + JH * .198, JH * .052, JW * .7, '"Barlow Condensed", "Arial Narrow", sans-serif', .7, k.edge, 700);
+      if (name) word(name, JY + JH * .198, JH * .061, JW * .74, '"Barlow Condensed", "Arial Narrow", sans-serif', .7, k.edge, 700);
       word(String(num), JY + JH * .42, JH * .232, JW * .8, 'Liebling, Montserrat, Arial, sans-serif', .69, k.nEdge, 700);
       return o;
     }
