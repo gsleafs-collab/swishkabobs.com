@@ -806,7 +806,7 @@
 </footer>
 
 <script src="data.js?v=20261110b"></script>
-<script src="hist.js?v=20261119d"></script>
+<script src="hist.js?v=20261121e"></script>
 <script>
 (() => {
   const D = window.SK, T = D.team;
@@ -1179,10 +1179,12 @@
     const CC = [['name', 'Player'], ['gp', 'GP'], ['pts', 'PTS'], ['ppg', 'PPG'], ['reb', 'REB'], ['rpg', 'RPG'], ['ast', 'AST'], ['stl', 'STL'], ['blk', 'BLK'], ['tpm', '3PM'], ['fgp', 'FG%']];
     let cSort = 'pts';
     const fmt = (k, v) => (['ppg', 'rpg', 'apg', 'fgp'].includes(k) ? v.toFixed(1) : v);
+    const NUM = { ...(H.nums || {}), ...Object.fromEntries((D.players || []).map((p) => [p.name, p.num])) };   // current roster wins
+    const numTag = (n) => (NUM[n] != null ? `<span class="n">${NUM[n]}</span>` : '');
     function statTable(P, sortKey, cols = CC) {
       const rows = P.slice().sort((a, b) => (sortKey === 'name' ? a.name.localeCompare(b.name) : b[sortKey] - a[sortKey]));
       return [`<tr>${cols.map(([k, t]) => `<th data-k="${k}" class="${k === sortKey ? 'sorted' : ''}">${t}</th>`).join('')}</tr>`,
-        rows.map((p) => `<tr>${cols.map(([k]) => k === 'name' ? `<td><span class="nm">${esc(p.name)}</span></td>` : `<td>${fmt(k, p[k])}</td>`).join('')}</tr>`).join('')];
+        rows.map((p) => `<tr>${cols.map(([k]) => k === 'name' ? `<td>${numTag(p.name)}<span class="nm">${esc(p.name)}</span></td>` : `<td>${fmt(k, p[k])}</td>`).join('')}</tr>`).join('')];
     }
     function drawCareer() { const [h, b] = statTable(totals(boxed.filter(pick[filter])), cSort); $('bkTable').tHead.innerHTML = h; $('bkTable').tBodies[0].innerHTML = b; }
     $('bkTable').tHead.addEventListener('click', (e) => { const th = e.target.closest('th'); if (th) { cSort = th.dataset.k; drawCareer(); } });
