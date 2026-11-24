@@ -86,16 +86,21 @@
   // each surface in its own upright frame, so tilted books get snow along their real top edge
   function frame(el) {
     const b = el.getBoundingClientRect(), w = el.offsetWidth || b.width, h = el.offsetHeight || b.height;
-    let ang = 0, n = el;
-    for (let k = 0; n && k < 3; k++, n = n.parentElement) { const m = getComputedStyle(n).transform; if (m && m !== 'none') { const v = m.match(/-?[\d.e]+/g).map(Number); ang += Math.atan2(v[1], v[0]); } }
+    let ang = 0, n = el, is3d = false;
+    for (let k = 0; n && k < 3; k++, n = n.parentElement) {
+      const m = getComputedStyle(n).transform; if (!m || m === 'none') continue;
+      if (m.startsWith('matrix3d')) { is3d = true; continue; }                  // a card tilting under the mouse: leave its snow where it was
+      const v = m.match(/-?[\d.e]+/g).map(Number); ang += Math.atan2(v[1], v[0]);
+    }
     const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-    return { left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, width: w, height: h, cx, cy, ang, box: b };
+    return { left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, width: w, height: h, cx, cy, ang, box: b, is3d };
   }
   const loc = (r, x, y) => { if (!r.ang) return [x, y]; const dx = x - r.cx, dy = y - r.cy, c0 = Math.cos(-r.ang), s0 = Math.sin(-r.ang); return [r.cx + dx * c0 - dy * s0, r.cy + dx * s0 + dy * c0]; };
   const targets = () => [...document.querySelectorAll(SEL)].map((el) => ({ el, r: frame(el) })).filter(({ r }) => r.width > 40 && r.box.bottom > -30 && r.box.top < H + 30);
 
   function land(f) {
     for (const { el, r } of T) {
+      if (r.is3d) continue;
       const [fx, fy] = loc(r, f.x, f.y);
       if (fx < r.left + 3 || fx > r.right - 3 || r.box.top < navB + 4) continue;   // tucked under the top bar: no snow lands there
       const p = pileOf(el, r.width), i = Math.floor((fx - r.left) / COL), E = edgeOf(el, r, p), top = r.top + E.drop[i] - p.h[i];
@@ -194,6 +199,7 @@
   function runPlow() {
     if (!plow) { nextPlow(); if (!plow) return; }
     const P = plow, r = frame(P.el), p = piles.get(P.el);
+    if (r.is3d) { if (p) p.dirty = true; return; }                                 // pause while the card is tilted
     P.u += 3.4 * P.s + 1;
     const len = r.width;
     P.fade = Math.max(0, Math.min(1, (P.u + 70 * P.s) / 40, (len + 70 * P.s - P.u) / 40));
@@ -232,7 +238,7 @@
       runPlow();
       for (const { el, r } of T) {
         const p = piles.get(el); if (!p) continue;
-        place(el, r, p);
+        if (!r.is3d) place(el, r, p);
         if (p.dirty || (plow && plow.el === el) || (plow === null && p.hadPlow)) { p.hadPlow = !!(plow && plow.el === el); paintPile(el, r, p); }
       }
       c.fillStyle = '#fff';
