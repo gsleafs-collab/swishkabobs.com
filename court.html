@@ -265,11 +265,20 @@
   table.st th:nth-child(2), table.st td:nth-child(2) { text-align: left; }
   table.st th:first-child, table.st td:first-child { width: 2.4em; text-align: center; color: var(--mute); }
   table.st td:nth-child(2) { font-weight: 600; }
-  table.st tr.me td { background: rgba(255,103,31,.16); color: #fff; }
+  table.st tr.me td { background: linear-gradient(180deg, rgba(255,103,31,.34), rgba(255,103,31,.2)); color: #fff; font-weight: 700; padding-top: 14px; padding-bottom: 14px; border-top: 2px solid var(--orange); border-bottom: 2px solid var(--orange); }
+  table.st tr.me td:last-child { box-shadow: inset -4px 0 0 var(--orange); }
+  table.st tr.me { animation: stGlow 2.4s ease-in-out infinite alternate; }
+  @keyframes stGlow { from { filter: drop-shadow(0 0 0 rgba(255,103,31,0)); } to { filter: drop-shadow(0 0 14px rgba(255,103,31,.55)); } }
+  table.st .st-wm { display: block; height: 46px; margin: -6px 0; width: auto; filter: drop-shadow(2px 3px 0 rgba(0,0,0,.45)); }
+  table.st .l5 { display: inline-flex; gap: 4px; vertical-align: middle; }
+  table.st .l5 i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 700 11px/1 var(--cond); font-style: normal; color: #0d1014; }
+  table.st .l5 i.w { background: #2fc46c; } table.st .l5 i.l { background: #e5534b; color: #fff; }
+  table.st .l5 i:last-child { box-shadow: 0 0 0 2px var(--ink-2), 0 0 0 3.5px rgba(255,255,255,.55); }
   table.st tr.me td:first-child { box-shadow: inset 4px 0 0 var(--orange); color: var(--orange); font-weight: 700; }
   table.st tr.me td:nth-child(2) { color: var(--gold); }
   table.st td.up, table.st tr.me td.up { color: #6fe09a; } table.st td.dn, table.st tr.me td.dn { color: #ff8a7a; }
-  @media (max-width: 640px) { table.st { min-width: 0; } table.st th:nth-child(7), table.st td:nth-child(7), table.st th:nth-child(8), table.st td:nth-child(8) { display: none; } }
+  @media (max-width: 640px) { table.st { min-width: 0; } table.st th:nth-child(7), table.st td:nth-child(7), table.st th:nth-child(8), table.st td:nth-child(8), table.st th:nth-child(3), table.st td:nth-child(3) { display: none; }
+    table.st th, table.st td { padding-left: 5px; padding-right: 5px; font-size: 14px; } table.st td:nth-child(2) { white-space: normal; line-height: 1.15; } table.st .st-wm { height: 28px; margin: -4px 0; } table.st .l5 { gap: 4px; } table.st .l5 i { width: 12px; height: 13px; font-size: 0; } table.st .l5 i:last-child { box-shadow: 0 0 0 1.5px var(--ink-2), 0 0 0 3px rgba(255,255,255,.55); } }
   .tablewrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 600px; }
   th, td { padding: 11px 12px; text-align: right; white-space: nowrap; }
@@ -765,8 +774,8 @@
 
   <section id="standings">
     <div class="wrap">
-      <div class="head"><span class="no">02</span><h2>Standings</h2><p id="stNote"></p></div>
-      <div class="tablewrap rv st-wrap"><table id="stTable" class="st"><thead><tr><th>#</th><th>Team</th><th>GP</th><th>W</th><th>L</th><th>PCT</th><th>PF</th><th>PA</th><th>Diff</th></tr></thead><tbody></tbody></table></div>
+      <div class="head"><span class="no">02</span><h2>Standings</h2></div>
+      <div class="tablewrap rv st-wrap"><table id="stTable" class="st"><thead><tr><th>#</th><th>Team</th><th>GP</th><th>W</th><th>L</th><th>PCT</th><th>PF</th><th>PA</th><th>Diff</th><th>Last 5</th></tr></thead><tbody></tbody></table></div>
       <p class="fine" id="stFine"></p>
     </div>
   </section>
@@ -884,7 +893,7 @@
   </div>
 </footer>
 
-<script src="data.js?v=20261110b"></script>
+<script src="data.js?v=20261125a"></script>
 <script src="hist.js?v=20261121e"></script>
 <script>
 (() => {
@@ -936,9 +945,8 @@
   (() => {
     const ST = D.standings; if (!ST || !ST.rows) return;
     const me = (D.team && D.team.name) || 'Swish Kabobs';
-    $('stNote').textContent = `${ST.division || ''} · through ${ST.asOf}`.replace(/^ · /, '');
-    $('stTable').tBodies[0].innerHTML = ST.rows.map(([t, w, l, pf, pa], i) => { const gp = w + l, d = pf - pa;
-      return `<tr class="${t === me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(t)}</td><td>${gp}</td><td>${w}</td><td>${l}</td><td>${gp ? (w / gp).toFixed(3).replace(/^0/, '') : '-'}</td><td>${pf}</td><td>${pa}</td><td class="${d > 0 ? 'up' : d < 0 ? 'dn' : ''}">${d > 0 ? '+' : ''}${d}</td></tr>`; }).join('');
+    $('stTable').tBodies[0].innerHTML = ST.rows.map(([t, w, l, pf, pa, l5 = ''], i) => { const gp = w + l, d = pf - pa;
+      return `<tr class="${t === me ? 'me' : ''}"><td>${i + 1}</td><td>${t === me ? `<img class="st-wm" src="wordmark.png" alt="${esc(t)}">` : esc(t)}</td><td>${gp}</td><td>${w}</td><td>${l}</td><td>${gp ? (w / gp).toFixed(3).replace(/^0/, '') : '-'}</td><td>${pf}</td><td>${pa}</td><td class="${d > 0 ? 'up' : d < 0 ? 'dn' : ''}">${d > 0 ? '+' : ''}${d}</td><td><span class="l5" title="Last 5, oldest to newest">${[...l5].map((r) => `<i class="${r === 'W' ? 'w' : 'l'}">${r}</i>`).join('')}</span></td></tr>`; }).join('');
     $('stFine').innerHTML = `From the league standings on <a href="${esc(ST.url)}" target="_blank" rel="noopener">tcbl.ca</a>.`;
   })();
   $('foot').textContent = 'Website created by Gurjot Mann in 2026';

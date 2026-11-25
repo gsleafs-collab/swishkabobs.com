@@ -29,20 +29,20 @@ window.SK = {
   ],
 
   /* League standings from tcbl.ca/standings (Saturday Beginner, Fall 2026, through Nov 7). Top to bottom.
-     [team, W, L, PF, PA] */
+     [team, W, L, PF, PA, last 5 games oldest to newest] */
   standings: {
     asOf: 'Nov 7', url: 'https://tcbl.ca/standings', division: 'Saturday Beginner',
     rows: [
-      ['Ice Breakers', 6, 1, 451, 319],
-      ['Mark & Arthur', 5, 2, 363, 335],
-      ['VSS', 4, 3, 379, 357],
-      ['Rice Gang', 4, 3, 320, 333],
-      ['NGSS', 4, 3, 325, 347],
-      ['Craves Rec', 3, 4, 359, 346],
-      ['The Bernardigans', 3, 4, 421, 424],
-      ['Unction', 3, 4, 380, 427],
-      ['Swish Kabobs', 2, 5, 344, 358],
-      ['NDD', 1, 6, 275, 371]
+      ['Ice Breakers', 6, 1, 451, 319, 'WLWWW'],
+      ['Mark & Arthur', 5, 2, 363, 335, 'LWWLW'],
+      ['VSS', 4, 3, 379, 357, 'WWLWW'],
+      ['Rice Gang', 4, 3, 320, 333, 'WLLWW'],
+      ['NGSS', 4, 3, 325, 347, 'WWLWL'],
+      ['Craves Rec', 3, 4, 359, 346, 'WWLLL'],
+      ['The Bernardigans', 3, 4, 421, 424, 'LLWLW'],
+      ['Unction', 3, 4, 380, 427, 'LWWWL'],
+      ['Swish Kabobs', 2, 5, 344, 358, 'LLWLL'],
+      ['NDD', 1, 6, 275, 371, 'LLLLL']
     ]
   },
 
