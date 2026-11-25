@@ -11,7 +11,8 @@
   if (nav) {
     const st = document.createElement('style');
     st.textContent = `
-      .xmas { position: absolute; left: 0; right: 0; bottom: -15px; height: 22px; pointer-events: none; z-index: 2; overflow: visible; }
+      .xmas { position: absolute; left: 0; right: 0; bottom: -26px; height: 36px; pointer-events: none; z-index: 2; overflow: hidden; }
+      .xmas svg { margin-top: 11px; height: 22px !important; }
       .xmas svg { width: 100%; height: 100%; overflow: visible; display: block; }
       .xmas .bulb { transform-box: fill-box; transform-origin: 50% 0; }
       .xmas .glow { animation: xmasTw var(--t) ease-in-out infinite alternate; animation-delay: var(--d); }
@@ -58,7 +59,7 @@
   // piles: each one is its own small canvas placed in the page, so it scrolls exactly with its card. Under the top bar.
   const layer = document.createElement('div');
   layer.setAttribute('aria-hidden', 'true');
-  layer.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:40';
+  layer.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;overflow:hidden;pointer-events:none;z-index:40';   // clipped to the page width
   document.body.appendChild(layer);
   if (getComputedStyle(document.body).position === 'static') document.body.style.position = 'relative';
 
@@ -230,6 +231,7 @@
     c.clearRect(0, 0, W, H);
     if (!document.hidden) {
       T = targets(); navB = nav ? nav.getBoundingClientRect().bottom + 14 : 0;
+      const dh = document.body.scrollHeight; if (layer._h !== dh) { layer._h = dh; layer.style.height = dh + 'px'; }
       for (const f of flakes) {
         f.a += .02; f.y += f.v; f.x += wind + Math.sin(f.a) * .35;
         if (f.y > H + 6 || land(f)) Object.assign(f, newFlake(false));
