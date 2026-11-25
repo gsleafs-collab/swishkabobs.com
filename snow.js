@@ -114,7 +114,7 @@
   if (reduce) return;
 
   /* ---------- snow ---------- */
-  const SEL = '.card, .bk-book:first-child .bk-sp, .tile, .leader, .games > *';    // only the top book: the others are covered
+  const SEL = '.card, .bk-book:first-child .bk-sp, .tile, .leader, .games > *, .st-wrap';    // only the top book: the others are covered
   const COL = 3;                                                                  // one pile column every 3px
   const PL = 90, PR = 70, PT = 64;                                                // room around each pile for the plow and its spray
   const dpr = Math.min(2, devicePixelRatio || 1);
