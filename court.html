@@ -627,6 +627,40 @@
   .posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 16px; }
   .posts .instagram-media { margin: 0 !important; min-width: 0 !important; width: 100% !important; }
 
+  /* ---------- contact: closed until you open it ---------- */
+  #contact { scroll-margin-top: 84px; }
+  .ct { border: 2px solid var(--ink-3); border-radius: 22px; background: var(--ink-2); overflow: hidden; transition: border-color .25s; }
+  .ct[open] { border-color: var(--teal); }
+  .ct > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 16px; padding: clamp(18px, 3.4vw, 26px) clamp(18px, 3.6vw, 30px); -webkit-tap-highlight-color: transparent; }
+  .ct > summary::-webkit-details-marker { display: none; }
+  .ct > summary b { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(24px, 4.6vw, 40px); line-height: 1; }
+  .ct > summary span { color: var(--mute); font-size: 14px; }
+  .ct > summary i { margin-left: auto; flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--orange); display: grid; place-items: center; transition: transform .35s cubic-bezier(.3,1.6,.5,1), background .2s; }
+  .ct > summary i::before, .ct > summary i::after { content: ""; position: absolute; width: 18px; height: 3px; border-radius: 2px; background: #fff; }
+  .ct > summary i::after { transform: rotate(90deg); transition: transform .3s; }
+  .ct > summary i { position: relative; }
+  .ct[open] > summary i { transform: rotate(180deg); background: var(--teal); } .ct[open] > summary i::after { transform: rotate(0deg); }
+  .ct > summary:hover i { transform: scale(1.1); } .ct[open] > summary:hover i { transform: rotate(180deg) scale(1.1); }
+  .ct-in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: clamp(18px, 3vw, 30px); padding: 0 clamp(18px, 3.6vw, 30px) clamp(20px, 3.6vw, 30px); }
+  .ct[open] .ct-in { animation: bkUp .5s cubic-bezier(.2,1.3,.4,1) both; }
+  .ct-ig { align-self: start; border-radius: 18px; padding: 22px; background: linear-gradient(140deg, var(--gold), var(--teal)); color: #14181d; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  .ct-ig h3 { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(26px, 4vw, 38px); line-height: .95; }
+  .ct-ig p { margin: 0; font-weight: 500; }
+  .ct-ig .btn { font-size: 15px; padding: 12px 18px; }
+  .ct-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ct-form label { display: grid; gap: 6px; font-family: var(--cond); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 12px; color: var(--mute); }
+  .ct-form label.wide { grid-column: 1 / -1; }
+  .ct-form label small { font-weight: 600; letter-spacing: .04em; text-transform: none; color: var(--ink-3); color: #6b7682; }
+  .ct-form input, .ct-form textarea { width: 100%; box-sizing: border-box; font: 16px/1.4 inherit; font-family: inherit; color: var(--cream); background: var(--ink); border: 1.5px solid var(--ink-3); border-radius: 12px; padding: 12px 14px; transition: border-color .2s, box-shadow .2s; }
+  .ct-form textarea { min-height: 120px; resize: vertical; }
+  .ct-form input:focus, .ct-form textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(241,180,52,.2); }
+  .ct-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .ct-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .ct-row .btn { border: 0; cursor: pointer; background: var(--orange); font-size: 16px; }
+  .ct-row .btn[disabled] { opacity: .6; cursor: wait; transform: none; }
+  .ct-msg { font-size: 14px; color: var(--mute); }
+  .ct-msg.ok { color: #6fe09a; } .ct-msg.bad { color: #ff8a7a; }
+  @media (max-width: 760px) { .ct-in { grid-template-columns: 1fr; } .ct-form { grid-template-columns: 1fr; } .ct > summary span { display: none; } }
   footer { margin-top: clamp(64px, 10vw, 120px); border-top: 1px solid var(--line); padding: 30px 0 46px; color: var(--mute); font-size: 14px; }
   footer .wrap { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
   footer img { height: 46px; }
@@ -795,6 +829,29 @@
       </div>
     </div>
   </section>
+  <section id="contact">
+    <div class="wrap">
+      <div class="head"><span class="no">06</span><h2>Contact</h2><p>Want to run with us or just say hi?</p></div>
+      <details class="ct rv" id="ct">
+        <summary><b>Get in touch</b><span>Send the team a message</span><i aria-hidden="true"></i></summary>
+        <div class="ct-in">
+          <div class="ct-ig">
+            <h3>Slide in the DMs</h3>
+            <p>Fastest way to reach us is on Instagram.</p>
+            <a class="btn" id="ctIg" href="https://www.instagram.com/swishkabobshoops/" target="_blank" rel="noopener">@swishkabobshoops ↗</a>
+          </div>
+          <form class="ct-form" id="ctForm" novalidate>
+            <label>Name<input name="name" autocomplete="name" required maxlength="80"></label>
+            <label>Email<input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+            <label class="wide"><span>Phone <small>(optional)</small></span><input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>
+            <label class="wide">Message<textarea name="message" required maxlength="2000"></textarea></label>
+            <input class="hp" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="ct-row"><button class="btn" type="submit">Send it</button><span class="ct-msg" id="ctMsg" role="status" aria-live="polite"></span></div>
+          </form>
+        </div>
+      </details>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -820,7 +877,33 @@
 
   /* ----- Copy that comes from the data ----- */
   $('eyebrow').textContent = T.season;
-  $('foot').textContent = T.league + ' · ' + T.season;
+  /* ----- Contact form -----
+     Messages go by email through FormSubmit (formsubmit.co). Swap the address for the private alias FormSubmit sends after activation. */
+  const CONTACT_TO = 'https://formsubmit.co/ajax/gsleafs@gmail.com';
+  const CONTACT_EXTRA = { _subject: 'Swish Kabobs website: new message', _template: 'table', _captcha: 'false' };
+  (() => {
+    const f = $('ctForm'), msg = $('ctMsg'); if (!f) return;
+    const igh = (D.instagram && D.instagram.handle) || 'swishkabobshoops';
+    $('ctIg').href = `https://www.instagram.com/${encodeURIComponent(igh)}/`; $('ctIg').textContent = '@' + igh + ' ↗';
+    const say = (t, k = '') => { msg.textContent = t; msg.className = 'ct-msg ' + k; };
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(f)); Object.keys(d).forEach((k) => (d[k] = String(d[k]).trim()));
+      if (d._honey) return;                                                   // a bot filled the hidden box
+      if (!d.name || !d.message) return say('Add your name and a message.', 'bad');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return say('That email doesn’t look right.', 'bad');
+      const btn = f.querySelector('button'); btn.disabled = true; say('Sending…');
+      try {
+        const r = await fetch(CONTACT_TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ ...CONTACT_EXTRA, name: d.name, email: d.email, phone: d.phone || '-', message: d.message, page: location.href }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j.success === false || j.success === 'false') throw new Error(j.message || r.status);
+        f.reset(); say('Got it. We’ll get back to you soon.', 'ok');
+      } catch (err) { say('That didn’t send. Try again, or DM us on Instagram.', 'bad'); }
+      btn.disabled = false;
+    });
+  })();
+  $('foot').textContent = 'Website created by Gurjot Mann in 2026';
   const wins = D.games.filter((g) => g.us > g.them).length;
 
   /* ----- Ticker ----- */
