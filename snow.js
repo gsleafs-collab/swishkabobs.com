@@ -59,6 +59,58 @@
       <circle cx="109" cy="50" r="3.6" fill="#e8eef4"/></svg>`;
     wrap.appendChild(hat);
   }
+  /* ---------- green tinsel around the Instagram posts ---------- */
+  const posts = document.getElementById('posts');
+  if (posts) {
+    if (getComputedStyle(posts).position === 'static') posts.style.position = 'relative';
+    const lay = document.createElement('div'); lay.setAttribute('aria-hidden', 'true');
+    lay.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:3';   // absolute, so it takes no grid cell
+    const tw = document.createElement('style');
+    tw.textContent = '.tinsel-glint{position:absolute;width:10px;height:10px;margin:-5px;background:radial-gradient(circle,#fff 0 18%,rgba(220,255,225,.8) 30%,transparent 62%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:tinselTw var(--t) ease-in-out infinite;animation-delay:var(--d);opacity:0}@keyframes tinselTw{0%,70%,100%{opacity:0;transform:scale(.4) rotate(0)}82%{opacity:1;transform:scale(1.25) rotate(45deg)}}@media (prefers-reduced-motion: reduce){.tinsel-glint{display:none}}';
+    document.head.appendChild(tw);
+    const GREENS = ['#0b5d2e', '#0f7a3c', '#14914a', '#1fae5b', '#2fc46c', '#49d17c', '#7be3a0'];
+    const P = 16, R = 6;
+    // points every step along a rounded rectangle, with the outward direction at each one
+    function ring(w, h, step) {
+      const pts = [], segs = [[R, 0, w - R, 0, 0, -1], [w, R, w, h - R, 1, 0], [w - R, h, R, h, 0, 1], [0, h - R, 0, R, -1, 0]];
+      for (const [x0, y0, x1, y1, nx, ny] of segs) { const L = Math.hypot(x1 - x0, y1 - y0); for (let d = 0; d < L; d += step) pts.push([x0 + (x1 - x0) * d / L, y0 + (y1 - y0) * d / L, nx, ny]); }
+      return pts;
+    }
+    function garland(w, h) {
+      const cv = document.createElement('canvas'), d = Math.min(2, devicePixelRatio || 1), W = w + P * 2, H = h + P * 2;
+      cv.width = W * d; cv.height = H * d; cv.style.cssText = `position:absolute;width:${W}px;height:${H}px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))`;
+      const c = cv.getContext('2d'); c.scale(d, d); c.translate(P, P); c.lineCap = 'round';
+      const pts = ring(w, h, 1.1);
+      c.strokeStyle = '#06401f'; c.lineWidth = 7; c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.stroke();   // the core cord
+      for (let pass = 0; pass < 3; pass++) for (const [x, y, nx, ny] of pts) {   // strands bristling every which way, darker underneath, brighter on top
+        const a = Math.atan2(ny, nx) + (Math.random() - .5) * 3.6, L = 4 + Math.random() * (pass === 2 ? 7 : 10), o = (Math.random() - .5) * 5;
+        const sx = x + nx * o, sy = y + ny * o;
+        c.strokeStyle = GREENS[Math.min(GREENS.length - 1, Math.floor(Math.random() * 4) + pass * 1.5)]; c.lineWidth = .9 + Math.random() * .8;
+        c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + Math.cos(a) * L, sy + Math.sin(a) * L); c.stroke();
+      }
+      c.globalCompositeOperation = 'lighter';                                // foil catching the light
+      for (const [x, y, nx, ny] of pts) if (Math.random() < .12) { const a = Math.random() * 6.28, L = 2 + Math.random() * 4; c.strokeStyle = `rgba(200,255,215,${.35 + Math.random() * .4})`; c.lineWidth = .7; c.beginPath(); c.moveTo(x + nx * (Math.random() - .5) * 6, y + ny * (Math.random() - .5) * 6); c.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); c.stroke(); }
+      return { cv, pts };
+    }
+    let sig = '';
+    function dress() {
+      const kids = [...posts.children].filter((k) => k !== lay && k.offsetWidth > 40 && k.offsetHeight > 40);
+      const now = kids.map((k) => [k.offsetLeft, k.offsetTop, k.offsetWidth, k.offsetHeight].join(',')).join('|');
+      if (now === sig) return; sig = now;
+      lay.innerHTML = '';
+      for (const k of kids) {
+        const { cv, pts } = garland(k.offsetWidth, k.offsetHeight);
+        cv.style.left = k.offsetLeft - P + 'px'; cv.style.top = k.offsetTop - P + 'px'; lay.appendChild(cv);
+        for (let g = 0; g < 7; g++) {
+          const [x, y] = pts[Math.floor(Math.random() * pts.length)], s = document.createElement('i'); s.className = 'tinsel-glint';
+          s.style.cssText = `left:${k.offsetLeft + x}px;top:${k.offsetTop + y}px;--t:${(2.4 + Math.random() * 2.6).toFixed(2)}s;--d:-${(Math.random() * 4).toFixed(2)}s`; lay.appendChild(s);
+        }
+      }
+    }
+    posts.appendChild(lay);
+    setInterval(dress, 800); addEventListener('resize', () => setTimeout(dress, 150)); dress();   // the embeds load late and change size, so keep checking
+  }
+
   if (reduce) return;
 
   /* ---------- snow ---------- */
