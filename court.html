@@ -716,6 +716,7 @@
       <a href="#gram">Gram</a>
       <a href="#film">Film</a>
       <a href="#books" id="navHistory">History</a>
+      <a href="#contact" id="navContact">Contact</a>
     </nav>
   </div>
   <div class="meter" id="meter" aria-hidden="true"><b></b><i></i></div>
@@ -877,6 +878,12 @@
 
   /* ----- Copy that comes from the data ----- */
   $('eyebrow').textContent = T.season;
+  // the Contact link in the top bar opens the section as well as jumping to it
+  $('navContact').addEventListener('click', (e) => {
+    e.preventDefault(); $('ct').open = true;
+    $('contact').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    setTimeout(() => { const n = document.querySelector('#ctForm [name=name]'); if (n && matchMedia('(hover: hover)').matches) n.focus({ preventScroll: true }); }, 700);
+  });
   /* ----- Contact form -----
      Messages go by email through FormSubmit (formsubmit.co). Swap the address for the private alias FormSubmit sends after activation. */
   const CONTACT_TO = 'https://formsubmit.co/ajax/gsleafs@gmail.com';
