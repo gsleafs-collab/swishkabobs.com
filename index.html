@@ -4,313 +4,252 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Swish Kabobs | Coming Soon</title>
-<meta name="description" content="Swish Kabobs. Swish on three! Coming soon.">
+<meta name="description" content="Swish Kabobs. Something's coming Friday at 9.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#c4520f">
+<meta name="theme-color" content="#07090b">
 <meta property="og:title" content="Swish Kabobs">
-<meta property="og:description" content="Swish on three! Coming soon.">
+<meta property="og:description" content="Something's coming. Friday, 9 PM.">
 <meta property="og:image" content="https://swishkabobs.com/poster.jpg">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preload" as="font" href="yellowtail.woff2" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-  @font-face {
-    font-family: "Yellowtail";
-    src: url("yellowtail.woff2") format("woff2");
-    font-weight: 400;
-    font-display: swap;
-  }
-  :root {
-    --gold: #f7c45a;
-    --ink: #1c1206;
-  }
+  @font-face { font-family: "Liebling"; font-weight: 700; src: url("liebling-digits.woff2") format("woff2"); font-display: swap; unicode-range: U+0030-0039; }
+  @font-face { font-family: "Yellowtail"; src: url("yellowtail.woff2") format("woff2"); font-display: swap; }
+  :root { --gold: #f1b434; --teal: #006269; --ink: #07090b; --display: "Anton", "Arial Narrow", Impact, sans-serif; --cond: "Barlow Condensed", "Arial Narrow", sans-serif; }
   * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-    background: #b5480e;
-  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--ink); color: #fff; -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--cond); }
 
-  /* The artwork, extended outward, sized to cover any screen.
-     Laptops and wide screens get the wide version, phones the tall one. */
-  .scene {
-    --ar: 2690 / 1454;
-    --px: 28.2528%; --py: 0%; --pw: 43.4944%; --ph: 100%;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    width: max(100vw, calc(100dvh * 2690 / 1454));
-    aspect-ratio: var(--ar);
-    translate: -50% -50%;
-    animation: rise 1.4s cubic-bezier(.2,.7,.2,1) both;
+  /* the room: dark, one light from above, haze drifting through it */
+  .room { position: fixed; inset: 0; overflow: hidden; }
+  .room::before {                                         /* the spotlight cone */
+    content: ""; position: absolute; left: 50%; top: -12vh; width: min(130vw, 1400px); height: 125vh; translate: -50% 0;
+    background: radial-gradient(ellipse 34% 62% at 50% 0%, rgba(255,226,170,.20), rgba(241,180,52,.07) 45%, transparent 72%);
+    clip-path: polygon(41% 0, 59% 0, 92% 100%, 8% 100%); filter: blur(8px);
+    animation: flicker 9s steps(1) infinite;
   }
-  @media (max-aspect-ratio: 79/100) {
-    .scene {
-      --ar: 1170 / 2574;
-      --px: 0%; --py: 21.7560%; --pw: 100%; --ph: 56.4880%;
-      width: max(100vw, calc(100dvh * 1170 / 2574));
-    }
+  .room::after {                                          /* vignette */
+    content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 35%, rgba(0,0,0,.85) 100%); pointer-events: none;
   }
-  .scene picture, .scene img {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  /* Box that lines up exactly with the original poster inside the artwork */
-  .poster {
-    position: absolute;
-    left: var(--px);
-    top: var(--py);
-    width: var(--pw);
-    height: var(--ph);
-    container-type: inline-size;
-  }
+  @keyframes flicker { 0%, 100% { opacity: 1; } 61% { opacity: .55; } 61.6% { opacity: 1; } 62.4% { opacity: .7; } 63% { opacity: 1; } }
+  .logo { position: absolute; left: 50%; top: 47%; height: min(96vh, 128vw); aspect-ratio: 1; translate: -50% -50%; opacity: 0;
+    background: url("logo-mark.png") center / contain no-repeat; filter: grayscale(.35) brightness(.55) drop-shadow(0 0 40px rgba(241,180,52,.15));
+    -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 38%, rgba(0,0,0,.35) 62%, transparent 75%); mask-image: radial-gradient(circle at 50% 45%, #000 38%, rgba(0,0,0,.35) 62%, transparent 75%);
+    animation: logoIn 2.6s .2s ease-out forwards, breathe 9s 2.8s ease-in-out infinite; }
+  @keyframes logoIn { to { opacity: .34; } }
+  @keyframes breathe { 50% { transform: scale(1.025); opacity: .27; } }
+  .fog { position: absolute; inset: -20%; background:
+      radial-gradient(ellipse 40% 18% at 20% 70%, rgba(200,210,220,.07), transparent 70%),
+      radial-gradient(ellipse 35% 16% at 75% 78%, rgba(200,210,220,.06), transparent 70%),
+      radial-gradient(ellipse 50% 22% at 50% 92%, rgba(200,210,220,.08), transparent 70%);
+    animation: drift 26s ease-in-out infinite alternate; filter: blur(14px); }
+  .fog.b { animation-duration: 34s; animation-direction: alternate-reverse; opacity: .8; transform: scaleX(-1); }
+  @keyframes drift { from { translate: -6% 0; } to { translate: 6% -2%; } }
+  .grain { position: absolute; inset: -50%; opacity: .09; pointer-events: none; mix-blend-mode: overlay; animation: grain .9s steps(4) infinite;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  @keyframes grain { 25% { translate: -3% 2%; } 50% { translate: 2% -3%; } 75% { translate: -2% -1%; } }
+  #motes { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-  /* "Coming Soon" set where the season dates used to be */
-  .soon {
-    position: absolute;
-    right: 4.5cqw;
-    bottom: 5.5cqw;
-    margin: 0;
-    font-family: "Yellowtail", cursive;
-    font-weight: 400;
-    font-size: 13.5cqw;
-    line-height: 1;
-    color: var(--gold);
-    -webkit-text-stroke: .55cqw var(--ink);
-    paint-order: stroke fill;
-    text-shadow: .45cqw .45cqw 0 var(--ink), .9cqw .9cqw 1.2cqw rgba(0,0,0,.35);
-    letter-spacing: .02em;
-    white-space: nowrap;
-    transform-origin: 80% 70%;
-    animation: pop 1.1s 1s cubic-bezier(.2,1.4,.4,1) both, bob 4s 2.2s ease-in-out infinite;
-  }
+  /* the jersey, alone in the light */
+  .stage { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; padding: max(18px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom)); }
+  .eyebrow { margin-top: 8px; font-weight: 600; letter-spacing: .5em; text-transform: uppercase; font-size: clamp(11px, 1.4vw, 14px); color: rgba(255,255,255,.5); padding-left: .5em; opacity: 0; animation: fadeUp 1.4s 1.6s ease-out forwards; }
+  .eyebrow b { color: var(--gold); font-weight: 700; }
+  .jz-wrap { position: relative; align-self: center; height: min(58vh, 92vw * 1.15); aspect-ratio: 300 / 345; opacity: 0; animation: jerseyIn 2.2s .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  .jz-wrap::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -6%; height: 9%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.75), transparent 70%); filter: blur(6px); }
+  @keyframes jerseyIn { from { opacity: 0; transform: translateY(24px) scale(.96); filter: brightness(0); } 60% { filter: brightness(.6); } to { opacity: 1; transform: none; filter: none; } }
+  #jersey { width: 100%; height: 100%; display: block; cursor: default; -webkit-tap-highlight-color: transparent; touch-action: manipulation; filter: drop-shadow(0 28px 30px rgba(0,0,0,.7)); }
+  .ring { position: absolute; left: 50%; top: 48%; width: 46%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 3px solid var(--gold); opacity: 0; pointer-events: none; }
+  .ring.go { animation: ring .6s ease-out; }
+  @keyframes ring { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(1.8); } }
 
-  #leaves {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
+  .clock { display: flex; justify-content: center; gap: clamp(4px, 1.6vw, 26px); align-items: flex-start; opacity: 0; animation: fadeUp 1.4s 2.2s ease-out forwards; }
+  .clock div { display: grid; justify-items: center; min-width: 1.5em; font-size: clamp(34px, 11vw, 86px); }
+  .clock b { font-family: var(--display); font-weight: 400; line-height: 1; letter-spacing: .02em; color: #fff; text-shadow: 0 0 22px rgba(241,180,52,.35); font-variant-numeric: tabular-nums; }
+  .clock b.tick { animation: tick .5s ease-out; }
+  @keyframes tick { from { color: var(--gold); text-shadow: 0 0 30px rgba(241,180,52,.9); } }
+  .clock span { font-weight: 600; letter-spacing: .35em; text-transform: uppercase; font-size: clamp(10px, 1.2vw, 13px); color: rgba(255,255,255,.45); margin-top: 8px; padding-left: .35em; }
+  .clock i { font-style: normal; font-family: var(--display); font-size: clamp(24px, 7vw, 60px); line-height: 1.1; color: rgba(241,180,52,.5); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .when { margin-top: 14px; text-align: center; opacity: 0; animation: fadeUp 1.4s 2.6s ease-out forwards; }
+  .when p { margin: 0; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; font-size: clamp(11px, 1.4vw, 14px); color: rgba(255,255,255,.55); padding-left: .4em; }
+  .when em { display: block; margin-top: 6px; font-family: "Yellowtail", cursive; font-style: normal; font-size: clamp(22px, 3vw, 30px); color: var(--gold); letter-spacing: 0; opacity: .85; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .live .clock { display: none; }
 
-  /* Invisible tap target sitting on the spinning basketball */
-  .ball {
-    position: absolute;
-    left: 40.3%;
-    top: 48.8%;
-    width: 17cqw;
-    aspect-ratio: 1;
-    translate: -50% -50%;
-    border: 0;
-    padding: 0;
-    border-radius: 50%;
-    background: none;
-    cursor: default;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .ball i {
-    position: absolute;
-    inset: 12%;
-    border-radius: 50%;
-    border: .7cqw solid var(--gold);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .ball i.go { animation: ring .6s ease-out; }
-  @keyframes ring {
-    from { opacity: .95; transform: scale(.7); }
-    to   { opacity: 0; transform: scale(1.9); }
-  }
-  .scene.hit { animation: thud .28s ease-out; }
-  @keyframes thud {
-    0% { scale: 1; } 40% { scale: 1.012; } 100% { scale: 1; }
-  }
-  /* Third tap: the ball swallows the screen */
-  .wipe {
-    position: fixed;
-    left: var(--wx, 50%);
-    top: var(--wy, 50%);
-    width: 10px;
-    height: 10px;
-    margin: -5px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ff9a4d, #ff671f 55%, #b8410f);
-    transform: scale(0);
-    pointer-events: none;
-    z-index: 10;
-  }
+  /* third tap: the ball swallows the screen */
+  .wipe { position: fixed; left: var(--wx, 50%); top: var(--wy, 50%); width: 10px; height: 10px; margin: -5px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9a4d, #ff671f 55%, #b8410f); transform: scale(0); pointer-events: none; z-index: 10; }
   .wipe.go { transition: transform .75s cubic-bezier(.7,0,.3,1); transform: scale(var(--ws, 400)); }
-
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(18px) scale(.985); }
-    to   { opacity: 1; transform: none; }
+  @media (max-height: 640px) { .jz-wrap { height: 50vh; } }
+  @media (max-width: 560px) {
+    .eyebrow { letter-spacing: .24em; padding-left: .24em; font-size: 11px; }
+    .clock span { letter-spacing: .2em; padding-left: .2em; font-size: 10px; }
+    .when p { letter-spacing: .22em; padding-left: .22em; font-size: 11px; }
   }
-  @keyframes pop {
-    from { opacity: 0; transform: translateY(30%) rotate(-6deg) scale(.7); }
-    to   { opacity: 1; transform: none; }
-  }
-  @keyframes bob {
-    0%, 100% { transform: rotate(0) translateY(0); }
-    50%      { transform: rotate(-1.5deg) translateY(-1.2cqw); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .scene, .soon { animation: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .room::before, .logo, .fog, .grain, .clock i { animation: none !important; } .logo { opacity: .3; } }
 </style>
 </head>
 <body>
-  <main class="scene">
-    <picture>
-      <source media="(max-aspect-ratio: 79/100)" srcset="poster-tall.webp" type="image/webp">
-      <source media="(max-aspect-ratio: 79/100)" srcset="poster-tall.jpg">
-      <source srcset="poster-wide.webp" type="image/webp">
-      <img src="poster-wide.jpg" alt="Swish Kabobs fall poster: Dropping Leaves and Draining Threes, under an autumn maple tree with the CN Tower behind">
-    </picture>
-    <div class="poster">
-      <h1 class="soon">Coming Soon...</h1>
-      <button class="ball" id="ball" type="button" tabindex="-1" aria-hidden="true"><i></i></button>
+  <div class="room" aria-hidden="true">
+    <div class="logo"></div>
+    <div class="fog"></div><div class="fog b"></div>
+    <canvas id="motes"></canvas>
+    <div class="grain"></div>
+  </div>
+
+  <main class="stage">
+    <p class="eyebrow">Swish Kabobs <b>·</b> Something's coming</p>
+    <div class="jz-wrap">
+      <canvas id="jersey" role="img" aria-label="A Swish Kabobs jersey, number 27, that says Coming Soon"></canvas>
+      <i class="ring" id="ring"></i>
+    </div>
+    <div>
+      <div class="clock" id="clock" aria-live="off">
+        <div><b id="cd">00</b><span>Days</span></div><i>:</i>
+        <div><b id="ch">00</b><span>Hours</span></div><i>:</i>
+        <div><b id="cm">00</b><span>Min</span></div><i>:</i>
+        <div><b id="cs">00</b><span>Sec</span></div>
+      </div>
+      <div class="when"><p id="whenTxt">Friday · November 27 · 9 PM</p><em>Swish on three.</em></div>
     </div>
   </main>
-  <canvas id="leaves" aria-hidden="true"></canvas>
   <div class="wipe" id="wipe" aria-hidden="true"></div>
 
 <script>
-/* Three quick taps on the basketball opens the team site */
+/* Countdown to the launch: Friday, November 27, 2026 at 9 PM Toronto time */
 (() => {
-  const ball = document.getElementById('ball');
-  const ring = ball.firstElementChild;
-  const wipe = document.getElementById('wipe');
-  const scene = document.querySelector('.scene');
-  let taps = 0, timer;
-  ball.addEventListener('click', () => {
-    taps++;
-    clearTimeout(timer);
-    timer = setTimeout(() => { taps = 0; }, 1600);
-    ring.classList.remove('go'); scene.classList.remove('hit');
-    void ring.offsetWidth;
-    ring.classList.add('go'); scene.classList.add('hit');
-    if (taps < 3) return;
-    clearTimeout(timer);
-    try { localStorage.setItem('sk-court', 'swish'); } catch (e) {}
-    const r = ball.getBoundingClientRect();
-    const x = r.left + r.width / 2, y = r.top + r.height / 2;
-    const far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    wipe.style.setProperty('--wx', x + 'px');
-    wipe.style.setProperty('--wy', y + 'px');
-    wipe.style.setProperty('--ws', (far / 5 + 2).toFixed(1));
-    wipe.classList.add('go');
-    setTimeout(() => { location.href = 'court.html'; }, 720);
-  });
-  // Coming back with the browser's back button: reset the wipe
-  addEventListener('pageshow', () => { wipe.classList.remove('go'); taps = 0; });
+  const LAUNCH = Date.UTC(2026, 10, 28, 2, 0, 0);
+  const el = { d: document.getElementById('cd'), h: document.getElementById('ch'), m: document.getElementById('cm'), s: document.getElementById('cs') };
+  const pad = (n) => String(n).padStart(2, '0');
+  let last = {};
+  function tick() {
+    const left = LAUNCH - Date.now();
+    if (left <= 0) {
+      document.body.classList.add('live');
+      document.getElementById('whenTxt').textContent = 'Tip-off. Opening the doors…';
+      setTimeout(() => location.replace(location.pathname + '?t=' + Date.now()), 20000);   // the real site replaces this page at 9: check back for it
+      return;
+    }
+    const s = Math.floor(left / 1000), v = { d: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60 };
+    for (const k in v) if (v[k] !== last[k]) { el[k].textContent = pad(v[k]); el[k].classList.remove('tick'); void el[k].offsetWidth; el[k].classList.add('tick'); }
+    last = v; setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+  }
+  tick();
 })();
 </script>
 
 <script>
+/* The jersey: the same artwork as the roster, number 27, COMING SOON across the back, no hanger, waving in the wind */
 (() => {
-  const canvas = document.getElementById('leaves');
-  const ctx = canvas.getContext('2d');
+  const cv = document.getElementById('jersey'), c = cv.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Colours sampled from the poster's maple leaves
-  const palette = [
-    ['#e8590c', '#9a3208'], ['#f08c00', '#a65a05'], ['#d9480f', '#7f2a07'],
-    ['#f5a524', '#a8680c'], ['#c7361b', '#6e1c0c'], ['#f2b632', '#9c6d0e'],
-    ['#e2701b', '#8c3b08']
-  ];
-
-  // Maple leaf outline, drawn in a 100x100 box centred on 0,0
-  const leafPath = new Path2D(
-    'M0,-48 L7,-30 L15,-36 L13,-14 L30,-28 L27,-20 L44,-22 L36,-8 L46,-4 L26,10 ' +
-    'L31,20 L10,16 L4,22 L3,46 L-3,46 L-4,22 L-10,16 L-31,20 L-26,10 L-46,-4 ' +
-    'L-36,-8 L-44,-22 L-27,-20 L-30,-28 L-13,-14 L-15,-36 L-7,-30 Z'
-  );
-  const veins = new Path2D(
-    'M0,40 L0,-40 M0,8 L28,-20 M0,8 L-28,-20 M0,18 L22,14 M0,18 L-22,14'
-  );
-
-  let W, H, dpr, leaves = [];
-
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const target = reduce ? 0 : Math.round(Math.min(70, Math.max(26, (W * H) / 17000)));
-    while (leaves.length < target) leaves.push(makeLeaf(true));
-    leaves.length = target;
-  }
-
-  function makeLeaf(anywhere) {
-    const depth = Math.random();            // 0 = far, 1 = near
-    const size = 16 + depth * 30;
-    return {
-      x: Math.random() * W,
-      y: anywhere ? Math.random() * H : -size * 2,
-      size,
-      depth,
-      fall: 0.35 + depth * 0.9 + Math.random() * 0.3,
-      swayAmp: 18 + Math.random() * 40,
-      swayFreq: 0.004 + Math.random() * 0.006,
-      phase: Math.random() * Math.PI * 2,
-      rot: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.04,
-      flip: Math.random() * Math.PI * 2,
-      flipSpeed: 0.01 + Math.random() * 0.03,
-      colors: palette[(Math.random() * palette.length) | 0],
-      baseX: 0
+  const LW = 300, AH = 345, S = 3, GOLD = '#f1b434', TEAL = '#006269';
+  const JX = 78.5, JY = 46, JW = 143, JH = 280, q = (x, y) => [JX + x * JW, JY + y * JH];
+  const body = (k) => { const m = (x, y) => k.moveTo(...q(x, y)), l = (x, y) => k.lineTo(...q(x, y)), qc = (a, b, x, y) => k.quadraticCurveTo(...q(a, b), ...q(x, y)), bc = (a, b, d, e, x, y) => k.bezierCurveTo(...q(a, b), ...q(d, e), ...q(x, y));
+    k.beginPath(); m(.26, 0); qc(.5, .1, .74, 0); l(.9, .038); qc(.93, .046, .925, .06); qc(.898, .1, .902, .17); bc(.904, .25, .95, .31, 1, .335); l(1.006, .985); qc(1.004, 1, .96, 1.002); qc(.5, 1.014, .04, 1.002); qc(-.004, 1, -.006, .985); l(0, .335); bc(.05, .31, .096, .25, .098, .17); qc(.102, .1, .075, .06); qc(.07, .046, .1, .038); l(.26, 0); k.closePath(); };
+  let art = null, tex = null, crest = null;
+  function paint() {
+    const o = document.createElement('canvas'); o.width = LW * S; o.height = AH * S;
+    const k = o.getContext('2d'); k.scale(S, S); k.lineJoin = k.lineCap = 'round';
+    // inside of the front panel, seen through the neck
+    k.beginPath(); k.moveTo(...q(.26, 0)); k.quadraticCurveTo(...q(.5, .1), ...q(.74, 0)); k.quadraticCurveTo(...q(.5, .2), ...q(.26, 0)); k.fillStyle = '#0b0e11'; k.fill();
+    body(k); k.fillStyle = '#1d252d'; k.fill();
+    k.save(); body(k); k.clip();
+    if (tex) { const h = JH * 1.02, w = h * tex.width / tex.height; k.drawImage(tex, 150 - w / 2, JY - JH * .01, w, h); }
+    const g = k.createLinearGradient(JX, 0, JX + JW, 0);
+    g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(.14, 'rgba(0,0,0,.06)'); g.addColorStop(.42, 'rgba(255,255,255,.06)'); g.addColorStop(.7, 'rgba(0,0,0,0)'); g.addColorStop(.88, 'rgba(0,0,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,.36)');
+    k.fillStyle = g; k.fillRect(JX - 2, JY, JW + 4, JH + 6);
+    const top = k.createLinearGradient(0, JY, 0, JY + JH);                // lit from above, falling into shadow at the hem
+    top.addColorStop(0, 'rgba(255,230,180,.08)'); top.addColorStop(.55, 'rgba(0,0,0,0)'); top.addColorStop(1, 'rgba(0,0,0,.35)');
+    k.fillStyle = top; k.fillRect(JX - 2, JY, JW + 4, JH + 6);
+    k.restore();
+    k.strokeStyle = 'rgba(255,255,255,.12)'; k.lineWidth = 1; body(k); k.stroke();
+    if (crest) { const r = JW * .075; k.drawImage(crest, 150 - r / 2, JY + JH * .11 - r / 2, r, r); }
+    const word = (txt, cy, cap, maxW, font, ratio, edge, wt) => {
+      let size = cap / ratio; k.font = `${wt} ${size}px ${font}`; const w = k.measureText(txt).width;
+      if (w > maxW) { edge *= maxW / w; size *= maxW / w; k.font = `${wt} ${size}px ${font}`; }
+      const base = cy + size * ratio / 2; k.textAlign = 'center'; k.textBaseline = 'alphabetic';
+      if (edge) { k.strokeStyle = TEAL; k.lineWidth = edge * 2; k.strokeText(txt, 150, base); }
+      k.fillStyle = GOLD; k.fillText(txt, 150, base);
     };
+    word('COMING SOON', JY + JH * .198, JH * .061, JW * .74, '"Barlow Condensed", "Arial Narrow", sans-serif', .7, 0, 700);
+    word('27', JY + JH * .42, JH * .232, JW * .8, 'Liebling, Montserrat, Arial, sans-serif', .69, 1.7, 700);
+    return o;
   }
-
-  let wind = 0, t = 0;
-  function frame() {
-    t++;
-    wind = Math.sin(t * 0.0015) * 0.6 + Math.sin(t * 0.0041) * 0.3;
-    ctx.clearRect(0, 0, W, H);
-    leaves.sort((a, b) => a.depth - b.depth);
-    for (const l of leaves) {
-      l.y += l.fall;
-      l.phase += l.swayFreq * 6;
-      l.baseX += wind * (0.4 + l.depth);
-      l.rot += l.spin + Math.sin(l.phase) * 0.01;
-      l.flip += l.flipSpeed;
-      const x = l.x + l.baseX + Math.sin(l.phase) * l.swayAmp;
-
-      if (l.y > H + l.size * 2 || x < -120 || x > W + 120) {
-        Object.assign(l, makeLeaf(false));
-        l.x = Math.random() * (W + 200) - 100;
-        continue;
-      }
-
-      const s = l.size / 100;
-      const flipX = Math.cos(l.flip);        // fake 3D tumble
-      ctx.save();
-      ctx.translate(x, l.y);
-      ctx.rotate(l.rot);
-      ctx.scale(s * (0.25 + 0.75 * Math.abs(flipX)), s);
-      ctx.globalAlpha = 0.75 + l.depth * 0.25;
-      ctx.fillStyle = flipX > 0 ? l.colors[0] : l.colors[1];
-      ctx.fill(leafPath);
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = 'rgba(70, 25, 5, .75)';
-      ctx.stroke(leafPath);
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = 'rgba(80, 30, 5, .55)';
-      ctx.stroke(veins);
-      ctx.restore();
+  function size() { const d = Math.min(devicePixelRatio || 1, 2), w = Math.round(cv.clientWidth * d), h = Math.round(cv.clientHeight * d); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } }
+  // a slow, heavy breeze that swings around, with a faster flutter on top
+  const wind = (t) => 1.3 * Math.tanh((.35 * Math.sin(t * .55) + .55 * Math.sin(t * 1.15 + 1.3) + .18 * Math.sin(t * 3.1 + .4)) / 1.1);
+  let band = 0, lt = 0;
+  function frame(ms) {
+    const t = ms / 1000, w = reduce ? 0 : wind(t), gust = Math.min(1, Math.abs(w)), dt = lt ? Math.min(.1, t - lt) : 0; lt = t; band += w * dt * 42;
+    const sx = cv.width / LW; c.setTransform(sx, 0, 0, sx, 0, (cv.height - AH * sx) / 2); c.clearRect(0, -AH, LW, AH * 3);
+    c.save(); c.translate(150, JY); c.rotate(-w * .05); c.translate(-150, -JY);
+    for (let y = 36; y < AH; y += 3) {                         // each row trails the one above it, so the hem swings last
+      const k = Math.max(0, (y - 60) / 254), k2 = Math.pow(k, 1.5);
+      const bend = reduce ? 0 : k2 * 16 * wind(t - k * .55);
+      const ripple = reduce ? 0 : k2 * (1 + 1.6 * gust) * Math.sin(y * .026 - t * 2.1) + k2 * (1.4 + 2 * gust) * Math.sin(y * .011 - t * 1.2 + 2);
+      const puff = reduce ? 0 : k * .03 * gust * Math.sin(t * .9 + 1);
+      c.drawImage(art, 0, y * S, LW * S, 3 * S, bend + ripple - LW * puff / 2, y, LW * (1 + puff), 3.6);
     }
-    requestAnimationFrame(frame);
+    if (!reduce) { c.globalCompositeOperation = 'source-atop';
+      for (let b = 0; b < 2; b++) { const cx = ((((band + b * 210) % 420) + 420) % 420) - 60, g = c.createLinearGradient(cx - 70, 0, cx + 70, 50);
+        g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.3, `rgba(255,255,255,${.03 + .04 * gust})`); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(.72, `rgba(0,0,0,${.08 + .08 * gust})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g; c.fillRect(0, 60, LW, AH); }
+      c.globalCompositeOperation = 'source-over'; }
+    c.restore();
+    if (!reduce) requestAnimationFrame(frame);
   }
+  const load = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  const fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('700 40px Liebling'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(() => {}) : Promise.resolve();
+  Promise.all([fonts, load('jersey-map-dark.jpg'), load('logo-mark.png')]).then(([, t, l]) => { tex = t; crest = l; art = paint(); size(); requestAnimationFrame(frame); });
+  addEventListener('resize', () => { size(); if (reduce && art) frame(0); });
+})();
+</script>
 
-  window.addEventListener('resize', resize);
-  resize();
-  if (!reduce) requestAnimationFrame(frame);
+<script>
+/* Dust floating in the spotlight */
+(() => {
+  const cv = document.getElementById('motes'), c = cv.getContext('2d');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let W, H, motes = [];
+  const size = () => { const d = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0);
+    motes = Array.from({ length: Math.round(Math.min(90, W * H / 14000)) }, () => ({ x: W / 2 + (Math.random() - .5) * W * .6, y: Math.random() * H, r: .4 + Math.random() * 1.6, vx: (Math.random() - .5) * .15, vy: -.05 - Math.random() * .2, p: Math.random() * 6.28 })); };
+  size(); addEventListener('resize', size);
+  (function loop() {
+    c.clearRect(0, 0, W, H);
+    for (const m of motes) {
+      m.p += .01; m.x += m.vx + Math.sin(m.p) * .15; m.y += m.vy;
+      if (m.y < -5) { m.y = H + 5; m.x = W / 2 + (Math.random() - .5) * W * .6; }
+      const inLight = Math.max(0, 1 - Math.abs(m.x - W / 2) / (W * (.12 + .38 * m.y / H)));   // brightest inside the cone
+      c.globalAlpha = .15 + .55 * inLight; c.fillStyle = '#ffe2a8'; c.beginPath(); c.arc(m.x, m.y, m.r, 0, 7); c.fill();
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
+
+<script>
+/* Three quick taps on the jersey opens the team site */
+(() => {
+  const target = document.getElementById('jersey'), ring = document.getElementById('ring'), wipe = document.getElementById('wipe');
+  let taps = 0, timer;
+  target.addEventListener('click', () => {
+    taps++; clearTimeout(timer); timer = setTimeout(() => { taps = 0; }, 1600);
+    ring.classList.remove('go'); void ring.offsetWidth; ring.classList.add('go');
+    if (taps < 3) return;
+    clearTimeout(timer);
+    try { localStorage.setItem('sk-court', 'swish'); } catch (e) {}
+    const r = target.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .45;
+    const far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    wipe.style.setProperty('--wx', x + 'px'); wipe.style.setProperty('--wy', y + 'px'); wipe.style.setProperty('--ws', (far / 5 + 2).toFixed(1));
+    wipe.classList.add('go');
+    setTimeout(() => { location.href = 'court.html'; }, 720);
+  });
+  addEventListener('pageshow', () => { wipe.classList.remove('go'); taps = 0; });
 })();
 </script>
 <script data-goatcounter="https://swishkabobs.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
