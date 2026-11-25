@@ -62,7 +62,7 @@
   .jz-wrap::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -6%; height: 9%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.75), transparent 70%); filter: blur(6px); }
   @keyframes jerseyIn { from { opacity: 0; transform: translateY(24px) scale(.96); filter: brightness(0); } 60% { filter: brightness(.6); } to { opacity: 1; transform: none; filter: none; } }
   #jersey { width: 100%; height: 100%; display: block; cursor: default; -webkit-tap-highlight-color: transparent; touch-action: manipulation; filter: drop-shadow(0 28px 30px rgba(0,0,0,.7)); }
-  .ring { position: absolute; left: 50%; top: 48%; width: 46%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 3px solid var(--gold); opacity: 0; pointer-events: none; }
+  .ring { position: fixed; left: 0; top: 0; width: 120px; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 3px solid var(--gold); opacity: 0; pointer-events: none; }
   .ring.go { animation: ring .6s ease-out; }
   @keyframes ring { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(1.8); } }
 
@@ -76,7 +76,9 @@
   @keyframes blink { 50% { opacity: .2; } }
   .when { margin-top: 14px; text-align: center; opacity: 0; animation: fadeUp 1.4s 2.6s ease-out forwards; }
   .when p { margin: 0; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; font-size: clamp(11px, 1.4vw, 14px); color: rgba(255,255,255,.55); padding-left: .4em; }
-  .when em { display: block; margin-top: 6px; font-family: "Yellowtail", cursive; font-style: normal; font-size: clamp(22px, 3vw, 30px); color: var(--gold); letter-spacing: 0; opacity: .85; }
+  .s3 { position: relative; display: block; margin: 4px auto 0; padding: 4px 14px 8px; border: 0; background: none; cursor: default; font-family: "Yellowtail", cursive; font-size: clamp(22px, 3vw, 30px); color: var(--gold); opacity: .85; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: none; }
+  .s3.hit { animation: s3 .3s ease-out; }
+  @keyframes s3 { 40% { transform: scale(1.12) rotate(-3deg); opacity: 1; text-shadow: 0 0 18px rgba(241,180,52,.9); } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   .live .clock { display: none; }
 
@@ -114,7 +116,7 @@
         <div><b id="cm">00</b><span>Min</span></div><i>:</i>
         <div><b id="cs">00</b><span>Sec</span></div>
       </div>
-      <div class="when"><p id="whenTxt">Friday · November 27 · 9 PM</p><em>Swish on three.</em></div>
+      <div class="when"><p id="whenTxt">Friday · November 27 · 9 PM</p><button class="s3" id="s3" type="button" aria-label="Swish on three">Swish on three.</button></div>
     </div>
   </main>
   <div class="wipe" id="wipe" aria-hidden="true"></div>
@@ -233,17 +235,18 @@
 </script>
 
 <script>
-/* Three quick taps on the jersey opens the team site */
+/* Three quick taps on "Swish on three." opens the team site */
 (() => {
-  const target = document.getElementById('jersey'), ring = document.getElementById('ring'), wipe = document.getElementById('wipe');
+  const target = document.getElementById('s3'), ring = document.getElementById('ring'), wipe = document.getElementById('wipe');
   let taps = 0, timer;
   target.addEventListener('click', () => {
     taps++; clearTimeout(timer); timer = setTimeout(() => { taps = 0; }, 1600);
-    ring.classList.remove('go'); void ring.offsetWidth; ring.classList.add('go');
+    const b = target.getBoundingClientRect(); ring.style.left = b.left + b.width / 2 + 'px'; ring.style.top = b.top + b.height / 2 + 'px';
+    ring.classList.remove('go'); target.classList.remove('hit'); void ring.offsetWidth; ring.classList.add('go'); target.classList.add('hit');
     if (taps < 3) return;
     clearTimeout(timer);
     try { localStorage.setItem('sk-court', 'swish'); } catch (e) {}
-    const r = target.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .45;
+    const r = target.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
     const far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
     wipe.style.setProperty('--wx', x + 'px'); wipe.style.setProperty('--wy', y + 'px'); wipe.style.setProperty('--ws', (far / 5 + 2).toFixed(1));
     wipe.classList.add('go');
