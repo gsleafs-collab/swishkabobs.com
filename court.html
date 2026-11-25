@@ -886,9 +886,9 @@
     setTimeout(() => { const n = document.querySelector('#ctForm [name=name]'); if (n && matchMedia('(hover: hover)').matches) n.focus({ preventScroll: true }); }, 700);
   });
   /* ----- Contact form -----
-     Messages go by email through FormSubmit (formsubmit.co). Swap the address for the private alias FormSubmit sends after activation. */
-  const CONTACT_TO = 'https://formsubmit.co/ajax/gsleafs@gmail.com';
-  const CONTACT_EXTRA = { _subject: 'Swish Kabobs website: new message', _template: 'table', _captcha: 'false' };
+     Messages go by email through Web3Forms (web3forms.com). The access key is meant to be public: it can only send to the inbox it was made for. */
+  const CONTACT_TO = 'https://api.web3forms.com/submit';
+  const CONTACT_EXTRA = { access_key: '8ba76d94-fc3e-4549-9d58-43db5a4c3180', subject: 'Swish Kabobs website: new message', from_name: 'swishkabobs.com', botcheck: '' };
   (() => {
     const f = $('ctForm'), msg = $('ctMsg'); if (!f) return;
     const igh = (D.instagram && D.instagram.handle) || 'swishkabobshoops';
@@ -902,8 +902,9 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return say('That email doesn’t look right.', 'bad');
       const btn = f.querySelector('button'); btn.disabled = true; say('Sending…');
       try {
-        const r = await fetch(CONTACT_TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ ...CONTACT_EXTRA, name: d.name, email: d.email, phone: d.phone || '-', message: d.message, page: location.href }) });
+        const fd = new FormData();                                            // sent as a plain form post, so the browser needs no extra permission check first
+        Object.entries({ ...CONTACT_EXTRA, name: d.name, email: d.email, replyto: d.email, phone: d.phone || '-', message: d.message, page: location.href }).forEach(([k, v]) => fd.append(k, v));
+        const r = await fetch(CONTACT_TO, { method: 'POST', headers: { Accept: 'application/json' }, body: fd });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.success === false || j.success === 'false') throw new Error(j.message || r.status);
         f.reset(); say('Got it. We’ll get back to you soon.', 'ok');
