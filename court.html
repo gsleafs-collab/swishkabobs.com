@@ -261,7 +261,9 @@
   .leader span { font-family: var(--cond); font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: .03em; }
   /* standings: our row stands out, the playoff line is marked */
   #standings { scroll-margin-top: 84px; }
-  table.st { min-width: 520px; }
+  table.st { min-width: 0; }
+  .st-wrap { overflow-x: hidden; touch-action: pan-y; }                   /* the standings always fit, so nothing slides sideways */
+  table.st th:first-child, table.st td:first-child { position: static; box-shadow: none; }
   table.st th:nth-child(2), table.st td:nth-child(2) { text-align: left; }
   table.st th:first-child, table.st td:first-child { width: 2.4em; text-align: center; color: var(--mute); }
   table.st td:nth-child(2) { font-weight: 600; }
@@ -274,10 +276,11 @@
   table.st .l5 i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 700 11px/1 var(--cond); font-style: normal; color: #0d1014; }
   table.st .l5 i.w { background: #2fc46c; } table.st .l5 i.l { background: #e5534b; color: #fff; }
   table.st .l5 i:last-child { box-shadow: 0 0 0 2px var(--ink-2), 0 0 0 3.5px rgba(255,255,255,.55); }
-  table.st tr.me td:first-child { box-shadow: inset 4px 0 0 var(--gold); color: var(--gold); font-weight: 700; }
+  table.st tr.me td:first-child { position: static; box-shadow: inset 4px 0 0 var(--gold); color: var(--gold); font-weight: 700; }
   table.st tr.me td:nth-child(2) { color: var(--gold); }
   table.st td.up, table.st tr.me td.up { color: #6fe09a; } table.st td.dn, table.st tr.me td.dn { color: #ff8a7a; }
-  @media (max-width: 640px) { table.st { min-width: 0; } table.st th:nth-child(7), table.st td:nth-child(7), table.st th:nth-child(8), table.st td:nth-child(8), table.st th:nth-child(3), table.st td:nth-child(3) { display: none; }
+  @media (max-width: 900px) { table.st th:nth-child(3), table.st td:nth-child(3) { display: none; } table.st th, table.st td { padding-left: 8px; padding-right: 8px; } }
+  @media (max-width: 640px) { table.st th:nth-child(7), table.st td:nth-child(7), table.st th:nth-child(8), table.st td:nth-child(8), table.st th:nth-child(3), table.st td:nth-child(3) { display: none; }
     table.st th, table.st td { padding-left: 5px; padding-right: 5px; font-size: 14px; } table.st td:nth-child(2) { white-space: normal; line-height: 1.15; } table.st .st-wm { height: 28px; margin: -4px 0; } table.st .l5 { gap: 4px; } table.st .l5 i { width: 12px; height: 13px; font-size: 0; } table.st .l5 i:last-child { box-shadow: 0 0 0 1.5px var(--ink-2), 0 0 0 3px rgba(255,255,255,.55); } }
   .tablewrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 600px; }
