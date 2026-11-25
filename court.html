@@ -259,6 +259,17 @@
   .leader::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--teal-hot), var(--gold)); }
   .leader strong { display: block; font-family: var(--display); font-weight: 400; font-size: 54px; line-height: 1; color: var(--cream); font-variant-numeric: tabular-nums; }
   .leader span { font-family: var(--cond); font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: .03em; }
+  /* standings: our row stands out, the playoff line is marked */
+  #standings { scroll-margin-top: 84px; }
+  table.st { min-width: 520px; }
+  table.st th:nth-child(2), table.st td:nth-child(2) { text-align: left; }
+  table.st th:first-child, table.st td:first-child { width: 2.4em; text-align: center; color: var(--mute); }
+  table.st td:nth-child(2) { font-weight: 600; }
+  table.st tr.me td { background: rgba(255,103,31,.16); color: #fff; }
+  table.st tr.me td:first-child { box-shadow: inset 4px 0 0 var(--orange); color: var(--orange); font-weight: 700; }
+  table.st tr.me td:nth-child(2) { color: var(--gold); }
+  table.st td.up, table.st tr.me td.up { color: #6fe09a; } table.st td.dn, table.st tr.me td.dn { color: #ff8a7a; }
+  @media (max-width: 640px) { table.st { min-width: 0; } table.st th:nth-child(7), table.st td:nth-child(7), table.st th:nth-child(8), table.st td:nth-child(8) { display: none; } }
   .tablewrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 600px; }
   th, td { padding: 11px 12px; text-align: right; white-space: nowrap; }
@@ -712,6 +723,7 @@
     <a class="brand" href="#top" aria-label="Swish Kabobs, back to top"><img src="logo-mark.png" alt=""><img class="wm" src="wordmark.png" alt="Swish Kabobs"></a>
     <nav class="links" aria-label="Sections">
       <a href="#schedule">Schedule</a>
+      <a href="#standings">Standings</a>
       <a href="#stats">Stats</a>
       <a href="#roster">Roster</a>
       <a href="#gram">Gram</a>
@@ -751,9 +763,17 @@
     </div>
   </section>
 
+  <section id="standings">
+    <div class="wrap">
+      <div class="head"><span class="no">02</span><h2>Standings</h2><p id="stNote"></p></div>
+      <div class="tablewrap rv st-wrap"><table id="stTable" class="st"><thead><tr><th>#</th><th>Team</th><th>GP</th><th>W</th><th>L</th><th>PCT</th><th>PF</th><th>PA</th><th>Diff</th></tr></thead><tbody></tbody></table></div>
+      <p class="fine" id="stFine"></p>
+    </div>
+  </section>
+
   <section id="stats">
     <div class="wrap">
-      <div class="head"><span class="no">02</span><h2>Stats</h2><p>Season totals tracked from the game film. Tap a column to sort.</p></div>
+      <div class="head"><span class="no">03</span><h2>Stats</h2><p>Season totals tracked from the game film. Tap a column to sort.</p></div>
       <div class="leaders" id="leaders"></div>
       <div class="tablewrap rv"><table id="table"><thead></thead><tbody></tbody></table></div>
       <p class="fine" id="statsNote"></p>
@@ -762,14 +782,14 @@
 
   <section id="roster">
     <div class="wrap">
-      <div class="head"><span class="no">03</span><h2>Roster</h2><p>Hover or tap a card for the numbers.</p></div>
+      <div class="head"><span class="no">04</span><h2>Roster</h2><p>Hover or tap a card for the numbers.</p></div>
       <div class="roster" id="rosterGrid"></div>
     </div>
   </section>
 
   <section id="gram">
     <div class="wrap">
-      <div class="head"><span class="no">04</span><h2>The Gram</h2><p>Latest from the team account.</p></div>
+      <div class="head"><span class="no">05</span><h2>The Gram</h2><p>Latest from the team account.</p></div>
       <div class="gram rv" id="gramCard"></div>
       <div class="posts" id="posts"></div>
     </div>
@@ -777,7 +797,7 @@
 
   <section id="film">
     <div class="wrap">
-      <div class="head"><span class="no">05</span><h2>Film Room</h2><p>This season's highlight reels and full tape. Every older game lives in the history books.</p></div>
+      <div class="head"><span class="no">06</span><h2>Film Room</h2><p>This season's highlight reels and full tape. Every older game lives in the history books.</p></div>
       <h3 class="sub rv">Highlight reels</h3>
       <div class="film" id="hlGrid"></div>
       <h3 class="sub rv">Full games</h3>
@@ -833,7 +853,7 @@
   </section>
   <section id="contact">
     <div class="wrap">
-      <div class="head"><span class="no">06</span><h2>Contact</h2><p>Want to run with us or just say hi?</p></div>
+      <div class="head"><span class="no">07</span><h2>Contact</h2><p>Want to run with us or just say hi?</p></div>
       <details class="ct rv" id="ct">
         <summary><b>Get in touch</b><span>Send the team a message</span><i aria-hidden="true"></i></summary>
         <div class="ct-in">
@@ -911,6 +931,15 @@
       } catch (err) { say('That didn’t send. Try again, or DM us on Instagram.', 'bad'); }
       btn.disabled = false;
     });
+  })();
+  /* ----- Standings ----- */
+  (() => {
+    const ST = D.standings; if (!ST || !ST.rows) return;
+    const me = (D.team && D.team.name) || 'Swish Kabobs';
+    $('stNote').textContent = `${ST.division || ''} · through ${ST.asOf}`.replace(/^ · /, '');
+    $('stTable').tBodies[0].innerHTML = ST.rows.map(([t, w, l, pf, pa], i) => { const gp = w + l, d = pf - pa;
+      return `<tr class="${t === me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(t)}</td><td>${gp}</td><td>${w}</td><td>${l}</td><td>${gp ? (w / gp).toFixed(3).replace(/^0/, '') : '-'}</td><td>${pf}</td><td>${pa}</td><td class="${d > 0 ? 'up' : d < 0 ? 'dn' : ''}">${d > 0 ? '+' : ''}${d}</td></tr>`; }).join('');
+    $('stFine').innerHTML = `From the league standings on <a href="${esc(ST.url)}" target="_blank" rel="noopener">tcbl.ca</a>.`;
   })();
   $('foot').textContent = 'Website created by Gurjot Mann in 2026';
   const wins = D.games.filter((g) => g.us > g.them).length;

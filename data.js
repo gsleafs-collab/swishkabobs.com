@@ -28,6 +28,24 @@ window.SK = {
     { date: '2026-09-12', time: '11:00 AM', where: '190 Allstate Pkwy, Markham', opp: 'Craves Rec', us: 55, them: 48, type: 'season', tcblGame: 3, yt: '-_aGGWI5jSg' }
   ],
 
+  /* League standings from tcbl.ca/standings (Saturday Beginner, Fall 2026, through Nov 7). Top to bottom.
+     [team, W, L, PF, PA] */
+  standings: {
+    asOf: 'Nov 7', url: 'https://tcbl.ca/standings', division: 'Saturday Beginner',
+    rows: [
+      ['Ice Breakers', 6, 1, 451, 319],
+      ['Mark & Arthur', 5, 2, 363, 335],
+      ['VSS', 4, 3, 379, 357],
+      ['Rice Gang', 4, 3, 320, 333],
+      ['NGSS', 4, 3, 325, 347],
+      ['Craves Rec', 3, 4, 359, 346],
+      ['The Bernardigans', 3, 4, 421, 424],
+      ['Unction', 3, 4, 380, 427],
+      ['Swish Kabobs', 2, 5, 344, 358],
+      ['NDD', 1, 6, 275, 371]
+    ]
+  },
+
   /* Games still to come. Example:
      { date: '2027-01-09', time: '10:00 AM', opp: 'NDD', where: '211 Steeles Ave E' } */
   upcoming: [],
