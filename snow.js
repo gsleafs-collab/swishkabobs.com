@@ -63,7 +63,7 @@
   if (getComputedStyle(document.body).position === 'static') document.body.style.position = 'relative';
 
   // every surface keeps its own pile and its own luck: some catch a lot of snow, some barely any
-  const piles = new WeakMap();
+  const piles = new WeakMap(), live = new Set();                                  // live: surfaces whose pile has a canvas in the page
   const capOf = (w) => Math.min(20, 6 + w * .045);
   function pileOf(el, w) {
     let p = piles.get(el);
@@ -135,7 +135,7 @@
   // keep a pile's canvas sitting on its surface, in page coordinates, turned to the surface's angle
   function place(el, r, p) {
     const E = edgeOf(el, r, p), w = Math.round(r.width + PL + PR), h = Math.round(PT + E.max + 8);
-    if (!p.cv) { p.cv = document.createElement('canvas'); p.cv.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none'; p.ctx = p.cv.getContext('2d'); layer.appendChild(p.cv); }
+    if (!p.cv) { p.cv = document.createElement('canvas'); p.cv.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none'; p.ctx = p.cv.getContext('2d'); layer.appendChild(p.cv); live.add(el); }
     if (p.cv.width !== w * dpr || p.cv.height !== h * dpr) { p.cv.width = w * dpr; p.cv.height = h * dpr; p.cv.style.width = w + 'px'; p.cv.style.height = h + 'px'; p.dirty = true; }
     const x = Math.round((r.left + scrollX - PL) * 2) / 2, y = Math.round((r.top + scrollY - PT) * 2) / 2;
     const g = `${x},${y},${r.ang.toFixed(4)}`;
@@ -236,9 +236,18 @@
         if (f.x > W + 50) f.x = -40; else if (f.x < -50) f.x = W + 40;
       }
       runPlow();
+      // every pile follows its surface, on screen or not, and hides when the surface does (a closed book, a hidden panel)
+      for (const el of live) {
+        const p = piles.get(el);
+        if (!p || !el.isConnected) { if (p && p.cv) p.cv.remove(); live.delete(el); continue; }
+        const shown = el.getClientRects().length > 0;
+        p.cv.style.display = shown ? '' : 'none';
+        if (!shown) continue;
+        const r = frame(el); if (!r.is3d) place(el, r, p);
+      }
       for (const { el, r } of T) {
         const p = piles.get(el); if (!p) continue;
-        if (!r.is3d) place(el, r, p);
+        if (!p.cv) { if (r.is3d) continue; place(el, r, p); }                         // first snow on this surface: give it a canvas
         if (p.dirty || (plow && plow.el === el) || (plow === null && p.hadPlow)) { p.hadPlow = !!(plow && plow.el === el); paintPile(el, r, p); }
       }
       c.fillStyle = '#fff';
