@@ -41,6 +41,24 @@
     };
     draw(); let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(draw, 200); });
   }
+  /* ---------- a Santa hat on the S of the big wordmark ---------- */
+  const wm = document.querySelector('.title img');
+  if (wm) {
+    const wrap = document.createElement('span');
+    wrap.style.cssText = 'position:relative;display:block;animation:' + getComputedStyle(wm).animation + ';transform-origin:30% 70%';
+    wm.style.animation = 'none'; wm.parentNode.insertBefore(wrap, wm); wrap.appendChild(wm);   // the hat sways with the wordmark
+    const hat = document.createElement('span'); hat.setAttribute('aria-hidden', 'true');
+    hat.style.cssText = 'position:absolute;left:21.5%;top:42%;width:13.5%;translate:-50% -88%;rotate:12deg;pointer-events:none;filter:drop-shadow(3px 5px 0 rgba(0,0,0,.4))';
+    hat.innerHTML = `<svg viewBox="0 0 120 100" style="display:block;width:100%;height:auto;overflow:visible">
+      <path d="M12 76 C18 48 34 22 58 12 C76 5 92 10 102 24 C108 32 112 42 112 52 C104 44 96 40 88 40 C90 52 94 64 100 76 Z" fill="#d7262e" stroke="#14181d" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M36 32 C46 22 58 16 72 15" fill="none" stroke="#ff6b6b" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+      <path d="M88 40 C90 52 94 64 100 76 L92 76 C88 66 86 54 88 40 Z" fill="#a8151c"/>
+      <rect x="4" y="68" width="104" height="24" rx="12" fill="#fff" stroke="#14181d" stroke-width="3.5"/>
+      <path d="M16 76 q6 4 0 8 M34 74 q6 5 0 9 M52 74 q6 5 0 9 M70 74 q6 5 0 9 M88 74 q6 5 0 9" fill="none" stroke="#d6dde5" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="113" cy="54" r="12" fill="#fff" stroke="#14181d" stroke-width="3.5"/>
+      <circle cx="109" cy="50" r="3.6" fill="#e8eef4"/></svg>`;
+    wrap.appendChild(hat);
+  }
   if (reduce) return;
 
   /* ---------- snow ---------- */
@@ -231,7 +249,9 @@
     c.clearRect(0, 0, W, H);
     if (!document.hidden) {
       T = targets(); navB = nav ? nav.getBoundingClientRect().bottom + 14 : 0;
-      const dh = document.body.scrollHeight; if (layer._h !== dh) { layer._h = dh; layer.style.height = dh + 'px'; }
+      // the pile layer is as tall as the page content (measured to the footer, not to itself, so it shrinks again when a book closes)
+      const end = document.querySelector('footer') || document.body.lastElementChild, dh = Math.ceil(end.getBoundingClientRect().bottom + scrollY);
+      if (layer._h !== dh) { layer._h = dh; layer.style.height = dh + 'px'; }
       for (const f of flakes) {
         f.a += .02; f.y += f.v; f.x += wind + Math.sin(f.a) * .35;
         if (f.y > H + 6 || land(f)) Object.assign(f, newFlake(false));
