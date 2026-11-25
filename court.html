@@ -911,10 +911,20 @@
 
   /* ----- Copy that comes from the data ----- */
   $('eyebrow').textContent = T.season;
+  // top bar links land with the section's number and title sitting just under the bar and its lights
+  const goTo = (sec) => {
+    const head = sec.querySelector('.head') || sec, bar = document.querySelector('.nav');
+    const gap = (bar ? bar.getBoundingClientRect().bottom : 70) + 34;
+    scrollTo({ top: Math.max(0, head.getBoundingClientRect().top + scrollY - gap), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
+  document.querySelectorAll('.links a[href^="#"]').forEach((a) => {
+    if (a.id === 'navHistory' || a.id === 'navContact') return;
+    a.addEventListener('click', (e) => { const sec = document.querySelector(a.getAttribute('href')); if (!sec) return; e.preventDefault(); goTo(sec); history.replaceState(null, '', a.getAttribute('href')); });
+  });
   // the Contact link in the top bar opens the section as well as jumping to it
   $('navContact').addEventListener('click', (e) => {
     e.preventDefault(); $('ct').open = true;
-    $('contact').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    goTo($('contact'));
     setTimeout(() => { const n = document.querySelector('#ctForm [name=name]'); if (n && matchMedia('(hover: hover)').matches) n.focus({ preventScroll: true }); }, 700);
   });
   /* ----- Contact form -----
