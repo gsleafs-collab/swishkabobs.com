@@ -53,21 +53,21 @@ window.SK = {
   /* Season totals from the filmed games. name: '' shows as "Player #N" until filled in.
      photo: optional image file name, pos: optional position. */
   players: [
-    { num: 17, name: 'Gurjot Mann', gp: 4, pts: 84, reb: 39, ast: 5,  tpm: 26, tpa: 81, fgm: 29, fga: 91 },
-    { num: 8,  name: 'Ranjit Brar', gp: 4, pts: 63, reb: 31, ast: 13, tpm: 10, tpa: 63, fgm: 26, fga: 101 },
-    { num: 10, name: 'Harjap Singh', gp: 4, pts: 20, reb: 19, ast: 18, tpm: 2,  tpa: 13, fgm: 8,  fga: 31 },
-    { num: 23, name: 'Kuljap Singh', gp: 3, pts: 16, reb: 8,  ast: 7,  tpm: 0,  tpa: 12, fgm: 8,  fga: 25 },
-    { num: 81, name: 'Gurkamal Bahga', gp: 3, pts: 12, reb: 49, ast: 3,  tpm: 0,  tpa: 0,  fgm: 5,  fga: 19 },
-    { num: 9,  name: 'Andrew Lam', gp: 4, pts: 12, reb: 14, ast: 9,  tpm: 1,  tpa: 12, fgm: 5,  fga: 22 },
-    { num: 77, name: 'Malcom Adejobi', gp: 2, pts: 8,  reb: 9,  ast: 0,  tpm: 0,  tpa: 1,  fgm: 4,  fga: 10 },
-    { num: 31, name: 'John Ganaden', gp: 3, pts: 8,  reb: 14, ast: 7,  tpm: 0,  tpa: 0,  fgm: 3,  fga: 7 },
-    { num: 32, name: 'Joshua Morales', gp: 4, pts: 6,  reb: 16, ast: 1,  tpm: 0,  tpa: 1,  fgm: 3,  fga: 11 },
-    { num: 5,  name: 'Spencer Healy', gp: 3, pts: 3,  reb: 4,  ast: 0,  tpm: 1,  tpa: 9,  fgm: 1,  fga: 10 },
-    { num: 7,  name: 'Eric Lee', gp: 3, pts: 2,  reb: 3,  ast: 1,  tpm: 0,  tpa: 3,  fgm: 1,  fga: 4 },
-    { num: 19, name: 'Joshua Jeyamohan', gp: 3, pts: 0,  reb: 3,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 },
-    { num: 2,  name: 'Jules Gammad', gp: 2, pts: 0,  reb: 3,  ast: 0,  tpm: 0,  tpa: 2,  fgm: 0,  fga: 5 },
-    { num: 18, name: 'Jack Healy', gp: 0, pts: 0,  reb: 0,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 },
-    { num: 25, name: 'Joshua Sanelli', gp: 0, pts: 0,  reb: 0,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 }
+    { num: 17, name: 'Gurjot Mann', pos: 'F', gp: 4, pts: 84, reb: 39, ast: 5,  tpm: 26, tpa: 81, fgm: 29, fga: 91 },
+    { num: 8,  name: 'Ranjit Brar', pos: 'G/F', gp: 4, pts: 63, reb: 31, ast: 13, tpm: 10, tpa: 63, fgm: 26, fga: 101 },
+    { num: 10, name: 'Harjap Singh', pos: 'G', gp: 4, pts: 20, reb: 19, ast: 18, tpm: 2,  tpa: 13, fgm: 8,  fga: 31 },
+    { num: 23, name: 'Kuljap Singh', pos: 'G', gp: 3, pts: 16, reb: 8,  ast: 7,  tpm: 0,  tpa: 12, fgm: 8,  fga: 25 },
+    { num: 81, name: 'Gurkamal Bahga', pos: 'C', gp: 3, pts: 12, reb: 49, ast: 3,  tpm: 0,  tpa: 0,  fgm: 5,  fga: 19 },
+    { num: 9,  name: 'Andrew Lam', pos: 'G', gp: 4, pts: 12, reb: 14, ast: 9,  tpm: 1,  tpa: 12, fgm: 5,  fga: 22 },
+    { num: 77, name: 'Malcom Adejobi', pos: 'C', gp: 2, pts: 8,  reb: 9,  ast: 0,  tpm: 0,  tpa: 1,  fgm: 4,  fga: 10 },
+    { num: 31, name: 'John Ganaden', pos: 'F', gp: 3, pts: 8,  reb: 14, ast: 7,  tpm: 0,  tpa: 0,  fgm: 3,  fga: 7 },
+    { num: 32, name: 'Joshua Morales', pos: 'F/C', gp: 4, pts: 6,  reb: 16, ast: 1,  tpm: 0,  tpa: 1,  fgm: 3,  fga: 11 },
+    { num: 5,  name: 'Spencer Healy', pos: 'F', gp: 3, pts: 3,  reb: 4,  ast: 0,  tpm: 1,  tpa: 9,  fgm: 1,  fga: 10 },
+    { num: 7,  name: 'Eric Lee', pos: 'G', gp: 3, pts: 2,  reb: 3,  ast: 1,  tpm: 0,  tpa: 3,  fgm: 1,  fga: 4 },
+    { num: 19, name: 'Joshua Jeyamohan', pos: 'F/C', gp: 3, pts: 0,  reb: 3,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 },
+    { num: 2,  name: 'Jules Gammad', pos: 'G', gp: 2, pts: 0,  reb: 3,  ast: 0,  tpm: 0,  tpa: 2,  fgm: 0,  fga: 5 },
+    { num: 18, name: 'Jack Healy', pos: 'F', gp: 0, pts: 0,  reb: 0,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 },
+    { num: 25, name: 'Joshua Sanelli', pos: 'G/F', gp: 0, pts: 0,  reb: 0,  ast: 0,  tpm: 0,  tpa: 0,  fgm: 0,  fga: 0 }
   ],
 
   /* Older full games from the league's YouTube channel (youtube.com/@tcblbasketball).

@@ -297,6 +297,8 @@
   tbody tr:hover td { background: var(--ink-3); }
   td .n { display: inline-grid; place-items: center; width: 34px; height: 26px; border-radius: 6px; background: var(--gold); color: #14181d; font-family: var(--display); font-size: 15px; margin-right: 10px; }
   td .nm { font-family: var(--cond); font-weight: 600; font-size: 17px; text-transform: uppercase; letter-spacing: .03em; }
+  td.ppg { font-weight: 700; color: var(--cream); }
+  td.pos { font-family: var(--cond); font-weight: 700; letter-spacing: .08em; color: var(--gold); }
   td.bar { position: relative; min-width: 110px; font-weight: 600; color: var(--cream); }
   td.bar s { position: absolute; left: 8px; right: 52px; top: 50%; height: 8px; translate: 0 -50%; background: var(--ink); border-radius: 4px; overflow: hidden; }
   td.bar s u { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--orange), var(--gold)); border-radius: 4px; transition: width 1.1s cubic-bezier(.2,.9,.3,1); }
@@ -304,7 +306,8 @@
   td.bar s { z-index: 0; }
   @media (max-width: 640px) {
     table { min-width: 0; }
-    th, td { padding: 10px 9px; } td { font-size: 14px; } th { font-size: 12px; letter-spacing: .08em; }
+    th, td { padding: 10px 7px; } td { font-size: 14px; } th { font-size: 12px; letter-spacing: .06em; }
+    td.pos { font-size: 13px; letter-spacing: 0; }
     td .n { width: 28px; height: 22px; font-size: 13px; margin-right: 7px; }
     td .nm { font-size: 15px; } td .nm-f { display: none; } td .nm-s { display: inline; }
     td.bar { min-width: 84px; } td.bar s { left: 6px; right: 40px; height: 6px; }
@@ -344,7 +347,9 @@
   .card img.ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .card .nm { position: relative; font-family: var(--cond); font-weight: 700; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
   .card .nm.long { font-size: 17px; }
-  .card .ps { position: relative; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-top: 4px; }
+  .card .nmrow { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .card .nmrow .nm { min-width: 0; }
+  .card .ps { position: relative; flex: none; font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); line-height: 1; }
   .card .back {
     position: absolute; inset: 0; background: rgba(255,103,31,.96); color: #14181d; padding: 14px; display: grid; align-content: center; gap: 6px;
     transform: translateY(101%); transition: transform .4s cubic-bezier(.3,1.3,.5,1);
@@ -896,7 +901,7 @@
   </div>
 </footer>
 
-<script src="data.js?v=20261125a"></script>
+<script src="data.js?v=20261126a"></script>
 <script src="hist.js?v=20261121e"></script>
 <script>
 (() => {
@@ -1012,20 +1017,21 @@
   $('leaders').innerHTML = lead.map((l, i) => { const p = top(l.k); return `<div class="leader rv" style="--d:${i}"><div class="big">${p.num}</div><small>${l.label}</small><strong data-count="${p[l.k].toFixed(l.dp)}" data-dp="${l.dp}">0</strong><span>#${p.num} ${esc(p.name || '')}</span></div>`; }).join('');
 
   const cols = [
-    { k: 'num', t: 'Player' }, { k: 'gp', t: 'GP' }, { k: 'ppg', t: 'PPG' }, { k: 'pts', t: 'PTS' },
+    { k: 'num', t: 'Player' }, { k: 'pos', t: 'Pos' }, { k: 'gp', t: 'GP' }, { k: 'ppg', t: 'PPG' }, { k: 'pts', t: 'PTS' },
     { k: 'reb', t: 'REB' }, { k: 'ast', t: 'AST' }, { k: 'tpm', t: '3P' }, { k: 'fgm', t: 'FG' }
   ];
   const lastNm = (p) => { const ln = (p.name || '').trim().split(/\s+/).pop(), same = P.filter((q) => (q.name || '').trim().split(/\s+/).pop() === ln).length > 1;
     return same ? p.name.trim()[0] + '. ' + ln : ln; };   // short names on phones: H. Singh and K. Singh stay apart
   let sortKey = 'ppg';
-  const maxPpg = Math.max(...P.map((p) => p.ppg)) || 1;
   function drawTable() {
-    const rows = P.slice().sort((a, b) => (sortKey === 'num' ? a.num - b.num : b[sortKey] - a[sortKey]));
+    const PO = { G: 1, 'G/F': 2, F: 3, 'F/C': 4, C: 5 };
+    const rows = P.slice().sort((a, b) => (sortKey === 'num' ? a.num - b.num : sortKey === 'pos' ? (PO[a.pos] || 9) - (PO[b.pos] || 9) || a.num - b.num : b[sortKey] - a[sortKey]));
     $('table').tHead.innerHTML = '<tr>' + cols.map((c) => `<th data-k="${c.k}" class="${c.k === sortKey ? 'sorted' : ''}">${c.t}</th>`).join('') + '</tr>';
     $('table').tBodies[0].innerHTML = rows.map((p) => `<tr>
       <td><span class="n">${p.num}</span><span class="nm nm-f">${esc(pname(p))}</span><span class="nm nm-s">${esc(lastNm(p))}</span></td>
+      <td class="pos">${esc(p.pos || '')}</td>
       <td>${p.gp}</td>
-      <td class="bar"><s><u style="--w:${(p.ppg / maxPpg * 100).toFixed(0)}%"></u></s>${p.ppg.toFixed(1)}</td>
+      <td class="ppg">${p.ppg.toFixed(1)}</td>
       <td>${p.pts}</td><td>${p.reb}</td><td>${p.ast}</td><td>${p.tpm}-${p.tpa}</td><td>${p.fgm}-${p.fga}</td></tr>`).join('');
   }
   drawTable();
@@ -1041,7 +1047,7 @@
   $('rosterGrid').innerHTML = P.slice().sort((a, b) => a.num - b.num).map((p, i) => `<div class="card rv${JERSEYS(p) ? ' jersey' : ''}" style="--d:${i % 6}" data-n="${p.num}" tabindex="0">
       ${p.photo ? `<img class="ph" src="${esc(p.photo)}" alt="">` : ''}
       ${JERSEYS(p) ? `<canvas class="jz" data-i="${i}" data-num="${p.num}" data-name="${esc(jname(p))}" role="img" aria-label="${esc(pname(p))} jersey, number ${p.num}"></canvas>` : ''}
-      <div class="nm${pname(p).length > 14 ? ' long' : ''}">${esc(pname(p))}</div><div class="ps${p.pos ? '' : ' auto'}">${esc(p.pos || '#' + p.num)}</div>
+      <div class="nmrow"><div class="nm${pname(p).length > 14 ? ' long' : ''}">${esc(pname(p))}</div>${p.pos ? `<div class="ps" aria-label="Position ${esc(p.pos)}">${esc(p.pos)}</div>` : ''}</div>
       <div class="back">
         <div>PPG <b>${p.ppg.toFixed(1)}</b></div><div>REB <b>${p.rpg.toFixed(1)}</b></div><div>AST <b>${p.apg.toFixed(1)}</b></div><div>3PM <b>${p.tpm}</b></div>
       </div></div>`).join('');
