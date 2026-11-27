@@ -404,6 +404,10 @@
   div.frame { cursor: default; }
   /* ---------- Record books: three books stacked on the table ---------- */
   .books { margin-top: 40px; }
+  .bk-hint { margin: 0 0 6px; text-align: center; font-family: var(--cond); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; font-size: 12px; color: rgba(255,255,255,.55); transition: opacity .4s; }
+  .bk-hint.flash { animation: bkHint 1.6s ease-in-out 2; }
+  @keyframes bkHint { 50% { color: var(--gold); text-shadow: 0 0 14px rgba(241,180,52,.7); } }
+  .books.used .bk-hint { opacity: 0; }
   .bk-hist, .bk-fx.hist { --c0: #00272b; --c1: #00474d; --c2: #0a7e86; --c3: #19a3a8; --c4: #006269; }
   .bk-lead, .bk-fx.lead { --c0: #3d1300; --c1: #7a2a05; --c2: #d9530f; --c3: #ff8a4d; --c4: #a83b07; }
   .bk-kab, .bk-fx.kab  { --c0: #08090b; --c1: #171b20; --c2: #2b333c; --c3: #47525e; --c4: #20262d; }
@@ -841,6 +845,7 @@
       <h3 class="sub rv">Full games</h3>
       <div class="film" id="fullGrid"></div>
       <div class="books rv" id="books">
+        <p class="bk-hint" id="bkHint">Tap a book to open it</p>
         <div class="bk-stack" role="group" aria-label="The record books">
           <button type="button" class="bk-book bk-hist" data-book="seasons" aria-expanded="false" aria-controls="bkPanel">
             <span class="bk-sp">
@@ -1500,6 +1505,7 @@
     }
     stack.addEventListener('click', (e) => {
       const b = e.target.closest('.bk-book'); if (!b || busy) return;
+      books.classList.add('used');
       const t = b.dataset.book;
       if (!panel.hidden && t === tab) return closePanel();
       if (reduce) return openPanel(t);
@@ -1509,8 +1515,8 @@
     $('navHistory').addEventListener('click', (e) => {
       e.preventDefault();
       if (!panel.hidden && tab === 'seasons') return panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-      stack.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-      setTimeout(() => shelf[0].click(), reduce ? 0 : 650);
+      stack.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });   // just bring the books into view, opening one is up to you
+      const h = $('bkHint'); h.classList.remove('flash'); void h.offsetWidth; h.classList.add('flash');
     });
     $('bkNote').textContent = `Leaders and career stats count the ${boxed.length} games with a box score, ${first.label} onward. Records and results cover all ${all.length} games since ${SEAS[0].label}.`;
   })();
