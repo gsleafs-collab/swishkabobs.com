@@ -244,6 +244,27 @@
   .game .opp small { display: block; font-family: var(--body); font-weight: 500; font-size: 12px; letter-spacing: .08em; color: var(--mute); }
   .game .opp a { color: var(--gold); text-decoration: none; margin-right: 10px; }
   .game .opp a:hover { text-decoration: underline; }
+  .game .opp button.bx { font: inherit; letter-spacing: inherit; color: var(--gold); background: none; border: 0; padding: 0; margin-right: 10px; cursor: pointer; }
+  .game .opp button.bx::after { content: " ▾"; display: inline-block; transition: transform .25s; }
+  .game.open .opp button.bx::after { transform: rotate(180deg); }
+  .game .opp button.bx:hover { text-decoration: underline; }
+  .game.open { border-color: var(--gold); }
+  .game.open:hover { transform: none; }
+  /* the box score drops open inside the game card */
+  .gbox { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.3,.8,.3,1); margin: -14px 0 0; }
+  .game.open .gbox { grid-template-rows: 1fr; margin-top: 0; }
+  .gbox > div { overflow: hidden; min-height: 0; }
+  .gbox .tablewrap { margin-top: 2px; border-radius: 12px; background: var(--ink); }
+  .gbox table { min-width: 620px; font-size: 14px; }
+  .gbox th, .gbox td { padding: 9px 10px; }
+  .gbox th:first-child, .gbox td:first-child { background: var(--ink); }
+  .gbox tr.tot td { font-weight: 700; color: var(--gold); border-top: 2px solid var(--line); }
+  .gbox td.hi { color: var(--cream); font-weight: 700; }
+  .gbox .gfoot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; padding: 10px 2px 4px; font-family: var(--body); font-size: 13px; color: var(--mute); text-transform: none; letter-spacing: 0; }
+  .gbox .gfoot a { color: var(--gold); font-weight: 600; text-decoration: none; }
+  .gbox .gfoot a:hover { text-decoration: underline; }
+  .gbox .none { padding: 14px 4px 6px; font-family: var(--body); font-size: 14px; color: var(--mute); }
+  @media (max-width: 640px) { .gbox table { min-width: 0; } .gbox th, .gbox td { padding: 8px 6px; font-size: 13px; } .gbox th:nth-child(5), .gbox td:nth-child(5), .gbox th:nth-child(6), .gbox td:nth-child(6), .gbox th:nth-child(7), .gbox td:nth-child(7) { display: none; } }
   .game .score { font-family: var(--display); font-size: clamp(24px, 4.4vw, 36px); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--mute); }
   .game .score b { font-weight: 400; color: var(--cream); }
   .wl { font-family: var(--display); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; background: var(--ink-3); color: var(--mute); }
@@ -987,19 +1008,43 @@
   ];
   $('board').innerHTML = tiles.map((t, i) => `<div class="tile rv" style="--d:${i}"><small>${t.label}</small><strong>${t.html}</strong><em>${esc(t.sub)}</em></div>`).join('');
 
+  /* ----- Box scores that drop open under each game ----- */
+  const BOX = {}; ((window.SKH && window.SKH.seasons) || []).forEach((se) => se.games.forEach((g) => { if (g.tcbl && g.box) BOX[g.tcbl] = g.box; }));
+  const NUMS = Object.fromEntries(D.players.map((p) => [p.name, p.num]));
+  const shortNm = (n) => { const ln = n.trim().split(/\s+/).pop(); return D.players.filter((p) => p.name.trim().split(/\s+/).pop() === ln).length > 1 ? n.trim()[0] + '. ' + ln : ln; };   // H. Singh and K. Singh stay apart
+  function boxHTML(g) {
+    const url = `https://tcbl.ca/games/${g.tcblGame}`, rows = BOX[g.tcblGame];
+    if (!rows) return `<p class="none">The league hasn't posted the box score for this game yet. <a href="${url}" target="_blank" rel="noopener" style="color:var(--gold)">Check tcbl.ca ↗</a></p>`;
+    const sh = (m, a) => `${m}-${a}`, pct = (m, a) => (a ? Math.round(m / a * 100) + '%' : '-');
+    const best = [1, 2, 3].map((k) => Math.max(...rows.map((r) => r[k])));
+    const list = rows.slice().sort((a, b) => b[1] - a[1] || b[2] - a[2]);
+    const t = rows.reduce((s, r) => r.map((v, k) => (k ? (s[k] || 0) + v : 'Team')), []);
+    const cell = (r, k) => `<td class="${k <= 3 && r[k] === best[k - 1] && r[k] > 0 ? 'hi' : ''}">${r[k]}</td>`;
+    return `<div class="tablewrap"><table><thead><tr><th>Player</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>FG</th><th>3P</th><th>FT</th></tr></thead><tbody>${
+      list.map((r) => `<tr><td>${NUMS[r[0]] != null ? `<span class="n">${NUMS[r[0]]}</span>` : ''}<span class="nm nm-f">${esc(r[0])}</span><span class="nm nm-s">${esc(shortNm(r[0]))}</span></td>${[1, 2, 3, 4, 5, 6].map((k) => cell(r, k)).join('')}<td>${sh(r[7], r[8])}</td><td>${sh(r[9], r[10])}</td><td>${sh(r[11], r[12])}</td></tr>`).join('')
+    }<tr class="tot"><td>Team</td>${[1, 2, 3, 4, 5, 6].map((k) => `<td>${t[k]}</td>`).join('')}<td>${sh(t[7], t[8])}</td><td>${sh(t[9], t[10])}</td><td>${sh(t[11], t[12])}</td></tr></tbody></table></div>
+      <div class="gfoot"><span>FG ${pct(t[7], t[8])} · 3P ${pct(t[9], t[10])} · FT ${pct(t[11], t[12])}</span><a href="${url}" target="_blank" rel="noopener">Full box score and highlights on tcbl.ca ↗</a></div>`;
+  }
+
   /* ----- Schedule ----- */
   $('schedNote').textContent = `${D.games.length} games played, ${wins} wins.`;
   $('next').innerHTML = D.upcoming.length
     ? D.upcoming.map((u) => { const x = md(u.date); return `<div class="next rv"><span class="dot"></span><div><h3>Next up: vs ${esc(u.opp)}</h3><p>${x.m} ${x.d}${u.time ? ' · ' + esc(u.time) : ''}${u.where ? ' · ' + esc(u.where) : ''}</p></div></div>`; }).join('')
     : `<div class="next rv"><span class="dot"></span><div><h3>${esc(T.season)} is in the books</h3><p>Next season's schedule lands here as soon as the league posts it.</p></div></div>`;
+  $('games').addEventListener('click', (e) => {
+    const b = e.target.closest('button.bx'); if (!b) return;
+    const card = b.closest('.game'), open = !card.classList.contains('open');
+    card.classList.toggle('open', open); b.setAttribute('aria-expanded', String(open));
+  });
   $('games').innerHTML = D.games.map((g, i) => {
     const w = g.us > g.them, x = md(g.date);
-    const links = (g.yt ? `<a href="#g-${g.date}">Watch</a>` : '') + (g.tcblGame ? `<a href="https://tcbl.ca/games/${g.tcblGame}" target="_blank" rel="noopener">Box score</a>` : '');
+    const links = (g.yt ? `<a href="#g-${g.date}">Watch</a>` : '') + (g.tcblGame ? `<button type="button" class="bx" aria-expanded="false" data-i="${i}">Box score</button>` : '');
     return `<div class="game rv ${w ? 'w' : 'l'}" style="--d:${i};--side:${i % 2 ? 1 : -1}">
       <div class="date">${x.m}<b>${x.d}</b></div>
       <div class="opp">vs ${esc(g.opp)}<small><span>${g.time ? esc(g.time) + ' · ' : ''}${g.type === 'consolation' ? 'Consolation' : 'Regular season'}</span>${g.where ? '<span class="where">' + esc(g.where) + '</span>' : ''}${links ? '<span>' + links + '</span>' : ''}</small></div>
       <div class="score"><b>${g.us}</b>-${g.them}</div>
       <div class="wl">${w ? 'W' : 'L'}</div>
+      ${g.tcblGame ? `<div class="gbox" id="gbox-${i}"><div>${boxHTML(g)}</div></div>` : ''}
     </div>`;
   }).join('');
 
