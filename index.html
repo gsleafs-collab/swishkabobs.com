@@ -1765,8 +1765,12 @@
     });
     cv.addEventListener('pointermove', (e) => {
       if (!held) return; const p = at(e);
+      // No carrying it up to the rim: past the release line the ball leaves your hand, so it has to be a real throw
+      const line = hoop.rimY + (floorY - hoop.rimY) * .45, over = p.y < line;
+      if (over) p.y = line;
       held.a += (p.x - held.x) / held.r; held.x = Math.max(held.r, Math.min(W - held.r, p.x)); held.y = Math.min(floorY - held.r, p.y);
       const now = performance.now(); trail.push({ ...p, t: now }); while (trail.length > 2 && now - trail[0].t > 140) trail.shift();
+      if (over) { release(); try { cv.releasePointerCapture(e.pointerId); } catch (_) {} }
     });
     const release = () => {
       if (!held) return; cv.classList.remove('hold');
